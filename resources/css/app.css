@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.paddingX {
+    padding: 10px 120px;
+}
+
+.paddingXD {
+    padding: 10px 60px;
+}
