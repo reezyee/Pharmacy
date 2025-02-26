@@ -1,70 +1,68 @@
 <!-- Sidebar -->
 <aside id="sidebar" class="fixed left-0 w-[20%] top-0 h-full bg-white shadow-lg duration-300 flex flex-col">
     <div class="flex items-center justify-center flex-col pt-10 pb-5 border-b-2 mx-3">
-        @php
-            $role = Auth::user()->role->name ?? 'Pelanggan'; // Default ke Pelanggan jika tidak ada role
+        <div class="w-24 h-24 rounded-full border-2 p-1 overflow-hidden">
+            @php
+                $role = Auth::user()->role->name ?? 'Pelanggan';
+                $roleColors = [
+                    'Admin' => [
+                        'bg' => 'bg-purple-100',
+                        'text' => 'text-purple-700',
+                        'border' => 'border-purple-700',
+                        'avatar_bg' => 'd8b4fe',
+                        'avatar_text' => '6b21a8',
+                    ],
+                    'Apoteker' => [
+                        'bg' => 'bg-green-100',
+                        'text' => 'text-green-700',
+                        'border' => 'border-green-700',
+                        'avatar_bg' => 'a3e635',
+                        'avatar_text' => '166534',
+                    ],
+                    'Dokter' => [
+                        'bg' => 'bg-blue-100',
+                        'text' => 'text-blue-700',
+                        'border' => 'border-blue-700',
+                        'avatar_bg' => '93c5fd',
+                        'avatar_text' => '1e3a8a',
+                    ],
+                    'Kasir' => [
+                        'bg' => 'bg-orange-100',
+                        'text' => 'text-orange-700',
+                        'border' => 'border-orange-700',
+                        'avatar_bg' => 'fdba74',
+                        'avatar_text' => '9a3412',
+                    ],
+                    'Pelanggan' => [
+                        'bg' => 'bg-gray-100',
+                        'text' => 'text-gray-700',
+                        'border' => 'border-gray-700',
+                        'avatar_bg' => 'd1d5db',
+                        'avatar_text' => '374151',
+                    ],
+                ];
+                $colors = $roleColors[$role] ?? $roleColors['Pelanggan'];
+            @endphp
 
-            // Warna sesuai role
-            $roleColors = [
-                'Admin' => [
-                    'bg' => 'bg-purple-100',
-                    'text' => 'text-purple-700',
-                    'border' => 'border-purple-700',
-                    'avatar_bg' => 'd8b4fe',
-                    'avatar_text' => '6b21a8',
-                ],
-                'Apoteker' => [
-                    'bg' => 'bg-green-100',
-                    'text' => 'text-green-700',
-                    'border' => 'border-green-700',
-                    'avatar_bg' => 'a3e635',
-                    'avatar_text' => '166534',
-                ],
-                'Dokter' => [
-                    'bg' => 'bg-blue-100',
-                    'text' => 'text-blue-700',
-                    'border' => 'border-blue-700',
-                    'avatar_bg' => '93c5fd',
-                    'avatar_text' => '1e3a8a',
-                ],
-                'Kasir' => [
-                    'bg' => 'bg-orange-100',
-                    'text' => 'text-orange-700',
-                    'border' => 'border-orange-700',
-                    'avatar_bg' => 'fdba74',
-                    'avatar_text' => '9a3412',
-                ],
-                'Pelanggan' => [
-                    'bg' => 'bg-gray-100',
-                    'text' => 'text-gray-700',
-                    'border' => 'border-gray-700',
-                    'avatar_bg' => 'd1d5db',
-                    'avatar_text' => '374151',
-                ],
-            ];
-
-            // Ambil warna berdasarkan role, jika tidak ada pakai default 'Pelanggan'
-            $colors = $roleColors[$role] ?? $roleColors['Pelanggan'];
-        @endphp
-
-        <img src="{{ Auth::user()->avatar
-            ? asset('storage/' . Auth::user()->avatar)
-            : 'https://ui-avatars.com/api/?name=' .
-                urlencode(Auth::user()->name) .
-                '&background=' .
-                $colors['avatar_bg'] .
-                '&color=' .
-                $colors['avatar_text'] }}"
-            alt="Profile Picture" width="96px" height="96px"
-            class="rounded-full border-2 p-1 {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}" />
-
+            <img id="avatarPreview"
+                src="{{ Auth::user()->avatar
+                    ? asset('storage/' . Auth::user()->avatar)
+                    : 'https://ui-avatars.com/api/?name=' .
+                        urlencode(Auth::user()->name) .
+                        '&background=' .
+                        $colors['avatar_bg'] .
+                        '&color=' .
+                        $colors['avatar_text'] }}"
+                alt="Profile Picture"
+                class="w-full h-full rounded-full object-cover {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}" />
+        </div>
         <p class="text-[1.2rem] font-medium leading-3 mt-2">{{ Auth::user()->name }}</p>
         <p class="text-gray-500">{{ Auth::user()->email }}</p>
     </div>
     <ul class="p-4 space-y-2 overflow-y-scroll scrollbar-hidden h-[65vh]">
         @if (Auth::user()->role_id === 5)
             <!-- Menu Pelanggan -->
-            <li><a href="/admin" class="flex p-2 rounded-lg hover:bg-gray-200 gap-2">
+            <li><a href="/user" class="flex p-2 rounded-lg hover:bg-gray-200 gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                         <path
                             d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Z" />
@@ -72,24 +70,30 @@
                     Dashboard
                 </a></li>
             {{-- <li><a href="/obat" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">Daf    tar Obat</a></li> --}}
-            <li><a href="/orders" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
+            <li><a href="/user/resep" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                         <path
                             d="M320-280q17 0 28.5-11.5T360-320q0-17-11.5-28.5T320-360q-17 0-28.5 11.5T280-320q0 17 11.5 28.5T320-280Zm0-160q17 0 28.5-11.5T360-480q0-17-11.5-28.5T320-520q-17 0-28.5 11.5T280-480q0 17 11.5 28.5T320-440Zm0-160q17 0 28.5-11.5T360-640q0-17-11.5-28.5T320-680q-17 0-28.5 11.5T280-640q0 17 11.5 28.5T320-600Zm120 320h240v-80H440v80Zm0-160h240v-80H440v80Zm0-160h240v-80H440v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z" />
-                    </svg>Pemesanan Obat</a></li>
-            <li><a href="/cart" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
+                    </svg>Recipes</a></li>
+            <li><a href="/upload-resep" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                         <path
-                            d="M480-80q-155 0-269-103T82-440h81q15 121 105.5 200.5T480-160q134 0 227-93t93-227q0-134-93-227t-227-93q-86 0-159.5 42.5T204-640h116v80H88q29-140 139-230t253-90q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm112-232L440-464v-216h80v184l128 128-56 56Z" />
+                            d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
+                    </svg>Upload Recipes</a></li>
+            <li><a href="/user/pesanan" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
+                    <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 " aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="black" viewBox="0 0 18 21">
+                        <path
+                            d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
                     </svg>
-                    Riwayat Pembelian</a></li>
-            <li><a href="/admin/akun" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
+                    Orders </a></li>
+            <li><a href="/user/chat" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                         <path
-                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+                            d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z" />
                     </svg>
-                    Profile</a></li>
-            <li><a href="/admin/setting" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
+                    Chat</a></li>
+            <li><a href="/user/setting" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                         <path
                             d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm112-260q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Z" />
@@ -118,35 +122,17 @@
                     </svg>
                     Recipes
                 </a></li>
-            <li>
-                <button type="button"
-                    class="flex items-center w-full p-2 text-base  transition duration-75 rounded-lg group"
-                    aria-controls="dropdown-example" data-collapse-toggle="dropdown-example">
+            <li><a href="/admin/obat-resep" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m424-318 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm280-590q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"/></svg>
+                    Recipe Verifications
+                </a></li>
+            <li><a href="/admin/pesanan" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
                     <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 " aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" fill="black" viewBox="0 0 18 21">
                         <path
                             d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
                     </svg>
-                    <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Orders</span>
-                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 10 6">
-                        <path stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 1 4 4 4-4" />
-                    </svg>
-                </button>
-                <ul id="dropdown-example" class="hidden py-2 space-y-2">
-                    <li>
-                        <a href="#"
-                            class="flex items-center w-full p-2  transition duration-75 rounded-lg pl-11 group">Order
-                            Recipe</a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center w-full p-2  transition duration-75 rounded-lg pl-11 group">Order
-                            Non-Recipe</a>
-                    </li>
-                </ul>
-            </li>
+                    Orders</a></li>
             <li><a href="/admin/laporan" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                         <path
@@ -189,7 +175,7 @@
 </aside>
 
 <!-- Navbar -->
-<nav class="bg-transparent float-end w-[85%]" x-data="{ isOpen: false }">
+<nav class="bg-transparent float-end w-[85%]" x-data="{ isOpen: false, newOrders: 0 }">
     <div class="paddingX">
         <div class="flex h-16 items-center justify-between">
             <div class="shrink-0 leading-6 flex flex-col justify-center">
@@ -203,7 +189,25 @@
             <div class="flex items-center gap-5">
                 <a href="{{ url('/') }}" class="border bg-white border-black px-2 py-1 rounded-full ">Front
                     Page</a>
-                <x-fas-bell width="35" height="35" class="border border-black rounded-full p-1" />
+
+                <!-- Notifikasi Order -->
+                <div class="relative">
+                    <x-fas-bell width="35" height="35"
+                        class="border border-black rounded-full p-1 cursor-pointer" onclick="toggleNotifications()" />
+                    <div id="notification-dot"
+                        class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full hidden"></div>
+
+                    <!-- Notifications dropdown -->
+                    <div id="notifications-dropdown"
+                        class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg hidden">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold mb-2">Notifications</h3>
+                            <div id="notifications-list" class="space-y-2">
+                                <!-- Notifications will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -256,4 +260,16 @@
     // Update setiap detik
     setInterval(updateDateTime, 1000);
     updateDateTime(); // Panggil sekali saat pertama kali halaman dimuat
+
+
+    function toggleNotifications() {
+        const dropdown = document.getElementById('notifications-dropdown');
+        dropdown.classList.toggle('hidden');
+
+        // Mark notifications as read
+        const notificationDot = document.getElementById('notification-dot');
+        if (notificationDot) {
+            notificationDot.classList.add('hidden');
+        }
+    }
 </script>

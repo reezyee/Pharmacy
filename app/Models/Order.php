@@ -14,9 +14,12 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'resep_id', // Pastikan ini ada!
         'order_number',
         'cart_token',
         'total_amount',
+        'shipping_cost', // Tambahkan ongkir
+        'handling_fee', // Tambahkan biaya COD
         'status',
         'payment_method',
         'payment_status',
@@ -51,4 +54,18 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    /**
+     * Hitung total akhir (subtotal + ongkir + biaya COD).
+     */
+    public function getFinalTotalAttribute()
+    {
+        return $this->total_amount + $this->shipping_cost + $this->handling_fee;
+    }
+
+    public function resep(): BelongsTo
+{
+    return $this->belongsTo(Resep::class, 'resep_id');
+}
+
 }

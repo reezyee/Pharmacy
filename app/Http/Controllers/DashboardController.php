@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Order;
 
 class DashboardController extends Controller
 {
@@ -26,9 +27,27 @@ class DashboardController extends Controller
     public function index()
     {
         if (Auth::user()->role_id == 5) {
-            return view('pages.user.index')->with(['title' => 'Dashboard']);;
+            $userId = Auth::id();
+
+            // Mengambil total pesanan berdasarkan user_id
+            $totalOrders = Order::where('user_id', $userId)->count();
+            $completedOrders = Order::where('user_id', $userId)->where('status', 'completed')->count();
+            $cancelledOrders = Order::where('user_id', $userId)->where('status', 'cancelled')->count();
+
+            $recentOrders = Order::where('user_id', $userId)
+                ->latest() // Urutkan dari yang terbaru
+                ->limit(5)
+                ->get();
+
+            $pendingOrders = Order::where('user_id', $userId)->where('status', 'pending')->count();
+            $processingOrders = Order::where('user_id', $userId)->where('status', 'processing')->count();
+            $completedOrders = Order::where('user_id', $userId)->where('status', 'completed')->count();
+            $cancelledOrders = Order::where('user_id', $userId)->where('status', 'cancelled')->count();
+
+            return view('pages.user.index', compact('totalOrders', 'completedOrders', 'cancelledOrders', 'recentOrders',  'pendingOrders', 'processingOrders', 'completedOrders', 'cancelledOrders'))
+                ->with(['title' => 'Dashboard']);
         } else {
-            // Data dummy (bisa diganti dengan data dari database)
+            // Data dashboard untuk admin tetap sama seperti sebelumnya
             $salesData = [
                 ['Day', 'Sales'],
                 ['Mon', 1000],
@@ -81,7 +100,8 @@ class DashboardController extends Controller
                 ],
             ];
 
-            return view('pages.admin.index',  compact('salesData', 'salesFunnel', 'categorySales', 'financialData'))->with(['title' => 'Dashboard']);;
+            return view('pages.admin.index',  compact('salesData', 'salesFunnel', 'categorySales', 'financialData'))
+                ->with(['title' => 'Dashboard']);
         }
     }
 }

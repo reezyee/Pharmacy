@@ -29,13 +29,42 @@ class ChatController extends Controller
 
     public function index()
     {
-        $users = User::where('id', '!=', auth()->id())->get();
-        return view('pages.admin.chat.index', compact('users'))->with(['title' => 'Chat']);
+        $user = auth()->user();
+
+        if ($user->role->name === 'Pelanggan') {
+            // Jika user adalah pelanggan, hanya tampilkan dokter dan apoteker
+            $users = User::whereHas('role', function ($query) {
+                $query->whereIn('name', ['Dokter', 'Apoteker']);
+            })->get();
+
+            return view('pages.user.chat.index', compact('users'))->with(['title' => 'Chat']);
+        } elseif ($user->role->name === 'Apoteker') {
+            // Jika user adalah apoteker, tampilkan dokter dan pelanggan
+            $users = User::whereHas('role', function ($query) {
+                $query->whereIn('name', ['Dokter', 'Pelanggan']);
+            })->get();
+
+            return view('pages.admin.chat.index', compact('users'))->with(['title' => 'Chat']);
+        } elseif ($user->role->name === 'Dokter') {
+            // Jika user adalah dokter, tampilkan apoteker dan pelanggan
+            $users = User::whereHas('role', function ($query) {
+                $query->whereIn('name', ['Apoteker', 'Pelanggan']);
+            })->get();
+
+            return view('pages.admin.chat.index', compact('users'))->with(['title' => 'Chat']);
+        } else {
+            // Jika user adalah admin atau kasir, tampilkan semua user kecuali dirinya sendiri
+            $users = User::where('id', '!=', $user->id)->get();
+
+            return view('pages.admin.chat.index', compact('users'))->with(['title' => 'Chat']);
+        }
     }
+
 
     public function show($id)
     {
         $user = User::findOrFail($id);
+        $authUser = auth()->user();
 
         // Ambil pesan dari database
         $messages = DB::table('ch_messages')
@@ -50,8 +79,14 @@ class ChatController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('pages.admin.chat.show', compact('user', 'messages'))->with(['title' => 'Chat']);
+        // Jika pelanggan, tampilkan view user
+        if ($authUser->role === 'Pelanggan') {
+            return view('pages.user.chat.show', compact('user', 'messages'))->with(['title' => 'Live Chat']);
+        } else {
+            return view('pages.admin.chat.show', compact('user', 'messages'))->with(['title' => 'Chat']);
+        }
     }
+
 
     public function sendMessage(Request $request)
     {

@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Auth/ResetPasswordController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -13,8 +12,7 @@ class ResetPasswordController extends Controller
 {
     public function showResetForm($token)
     {
-        // Memastikan token reset password valid
-        return view('auth.passwords.reset', ['token' => $token]);
+        return view('auth.passwords.reset-password', ['token' => $token]); // Sesuaikan dengan view yang ada
     }
 
     public function reset(Request $request)
@@ -25,22 +23,19 @@ class ResetPasswordController extends Controller
             'token' => 'required',
         ]);
 
-        // Menggunakan method Password::reset untuk melakukan reset
-        $response = Password::reset(
+        // Reset password menggunakan Laravel Password broker
+        $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) use ($request) {
+            function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
                 ])->save();
-
-                return redirect()->route('login')->with('status', 'Password has been reset!');
             }
         );
 
-        if ($response == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', 'Password has been reset!');
-        }
-
-        return back()->withErrors(['email' => 'There was an issue resetting your password.']);
+        // Cek apakah reset berhasil atau gagal
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => __($status)]);
     }
 }

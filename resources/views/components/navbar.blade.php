@@ -12,9 +12,6 @@
                         <a href="/"
                             class="{{ request()->is('/') ? 'underline decoration-2 text-black' : 'text-black hover:underline hover:decoration-2' }} rounded-md px-3 py-2 text-sm font-medium"
                             aria-current="{{ request()->is('/') ? 'page' : false }}">Beranda</a>
-                        <a href="/chat"
-                            class="{{ request()->is('chat') ? 'underline decoration-2 text-black' : 'text-black hover:underline hover:decoration-2' }} rounded-md px-3 py-2 text-sm font-medium"
-                            aria-current="{{ request()->is('chat') ? 'page' : false }}">Chat</a>
                         <a href="/shop"
                             class="{{ request()->is('shop') ? 'underline decoration-2 text-black' : 'text-black hover:underline hover:decoration-2' }} rounded-md px-3 py-2 text-sm font-medium"
                             aria-current="{{ request()->is('shop') ? 'page' : false }}">Belanja</a>

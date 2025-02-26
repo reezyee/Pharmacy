@@ -54,17 +54,18 @@
                         $colors = $roleColors[$role] ?? $roleColors['Pelanggan'];
                     @endphp
 
-                    <img src="{{ $user->avatar
-                        ? asset('storage/' . $user->avatar)
-                        : 'https://ui-avatars.com/api/?name=' .
-                            urlencode($user->name) .
-                            '&background=' .
-                            $colors['avatar_bg'] .
-                            '&color=' .
-                            $colors['avatar_text'] }}"
-                        alt="Profile Picture"
-                        class="w-10 h-10 rounded-full border-2 {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}" />
-                        <div class="ml-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden">
+                        <img src="{{ $user->avatar
+                            ? asset('storage/' . $user->avatar)
+                            : 'https://ui-avatars.com/api/?name=' .
+                                urlencode($user->name) .
+                                '&background=' .
+                                $colors['avatar_bg'] .
+                                '&color=' .
+                                $colors['avatar_text'] }}"
+                            class="w-full h-full rounded-full object-cover {{ $colors['border'] }}" alt="Profile Picture">
+                    </div>
+                    <div class="ml-3">
                         <p class="text-md font-semibold">{{ $user->name }}</p>
                         <p class="text-sm text-gray-500">{{ $user->role->name }}</p>
                     </div>

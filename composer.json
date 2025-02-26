@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "blade-ui-kit/blade-icons": "^1.7",
         "laravel/framework": "^11.31",
         "laravel/socialite": "^5.17",
@@ -14,7 +15,9 @@
         "laravel/ui": "^4.6",
         "munafio/chatify": "^1.6",
         "owenvoke/blade-fontawesome": "^2.8",
-        "pusher/pusher-php-server": "*"
+        "phpoffice/phpword": "^1.3",
+        "pusher/pusher-php-server": "^7.2",
+        "spatie/browsershot": "^5.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

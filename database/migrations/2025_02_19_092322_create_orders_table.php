@@ -14,12 +14,15 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('resep_id')->nullable()->constrained('reseps')->nullOnDelete();
             $table->string('order_number')->unique();
             $table->decimal('total_amount', 10, 2);
+            $table->decimal('shipping_cost', 10, 2)->default(0); // Ongkir
+            $table->decimal('handling_fee', 10, 2)->default(0); // Biaya COD
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
             $table->string('payment_method');
             $table->string('payment_status')->default('pending');
-            $table->text('shipping_address'); // Perbaikan: Simpan alamat langsung di sini
+            $table->text('shipping_address');
             $table->text('notes')->nullable();
             $table->string('cart_token')->nullable();
             $table->timestamps();

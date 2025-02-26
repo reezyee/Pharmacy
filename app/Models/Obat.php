@@ -39,9 +39,10 @@ class Obat extends Model
     {
         return $this->belongsTo(BentukObat::class);
     }
+    // Model Obat.php (fix)
     public function reseps()
     {
-        return $this->belongsToMany(Resep::class, 'resep_obat')
+        return $this->belongsToMany(Resep::class, 'obat_reseps')
             ->withPivot('dosis')
             ->withTimestamps();
     }

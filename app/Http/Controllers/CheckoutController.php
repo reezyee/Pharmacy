@@ -13,14 +13,21 @@ class CheckoutController extends Controller
 {
     public function index()
     {
+        // Pastikan user sudah login
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Please login to continue checkout.');
+        }
+
         $cartItems = [];
         $totalAmount = 0;
-        $address = auth()->user()?->address ?? null; // Gunakan null-safe operator
+        $address = auth()->user()->address;
 
-        if (auth()->check()) {
-            $user = auth()->user();
-            $cartItems = $user->cart()->with('obat')->get();
-            $totalAmount = $cartItems->sum(fn($item) => $item->obat->harga * $item->quantity);
+        $user = auth()->user();
+        $cartItems = $user->cart()->with('obat')->get();
+        $totalAmount = $cartItems->sum(fn($item) => $item->obat->harga * $item->quantity);
+
+        if ($cartItems->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
         return view('pages.checkout.index', compact('cartItems', 'totalAmount', 'address'))
@@ -29,53 +36,68 @@ class CheckoutController extends Controller
 
     public function process(Request $request)
     {
+        // Validasi request
         $request->validate([
             'address' => ['required', 'string', function ($attribute, $value, $fail) use ($request) {
                 if ($value === 'new' && empty($request->new_address)) {
-                    $fail('The address field is required.');
+                    $fail('New address is required when selecting new address option.');
                 }
             }],
-            'new_address' => 'nullable|string|max:255', // Tambahkan validasi untuk alamat baru
+            'new_address' => 'nullable|string|max:255',
             'payment_method' => 'required|in:cop,cod,transfer',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string|max:1000'
         ]);
 
         try {
             DB::beginTransaction();
 
             $user = auth()->user();
+            if (!$user) {
+                throw new \Exception('User not authenticated');
+            }
+
             $cartItems = $user->cart()->with('obat')->get();
 
             if ($cartItems->isEmpty()) {
-                return back()->with('error', 'Keranjang Anda kosong.');
+                throw new \Exception('Cart is empty');
             }
 
-            // Validasi stok obat
+            // Validasi stok
             foreach ($cartItems as $item) {
-                if ($item->quantity > $item->obat->banyak) {
-                    return back()->with('error', "Stok tidak cukup untuk {$item->obat->nama}.");
+                $obat = DB::table('obats')
+                    ->where('id', $item->obat_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$obat || $item->quantity > $obat->banyak) {
+                    throw new \Exception("Insufficient stock for product: {$item->obat->nama}");
                 }
             }
 
-            // Hitung total harga
+            // Hitung total
             $totalAmount = $cartItems->sum(fn($item) => $item->obat->harga * $item->quantity);
+            $shippingCost = ($request->payment_method === 'cop') ? 0 : 10000;
+            $handlingFee = ($request->payment_method === 'cod') ? 1000 : 0;
 
-            // Gunakan alamat baru jika user memilih "new", atau gunakan alamat lama
-            $address = $request->address === 'new' ? $request->new_address : $request->address;
+            // Tentukan alamat
+            $shippingAddress = $request->address === 'new' ? $request->new_address : $request->address;
 
-            // Simpan order
+            // Buat order
             $order = Order::create([
-                'order_number' => 'ORD-' . strtoupper(Str::random(10)),
                 'user_id' => $user->id,
-                'shipping_address' => $address,
-                'total_amount' => $totalAmount,
-                'payment_method' => $request->payment_method,
+                'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+                'total_amount' => $totalAmount + $shippingCost + $handlingFee,
+                'shipping_cost' => $shippingCost,
+                'handling_fee' => $handlingFee,
                 'status' => 'pending',
+                'payment_method' => $request->payment_method,
                 'payment_status' => 'pending',
-                'notes' => $request->notes
+                'shipping_address' => $shippingAddress,
+                'notes' => $request->notes,
+                'cart_token' => Str::random(32)
             ]);
 
-            // Simpan order items & update stok
+            // Buat order items dan update stok
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -85,27 +107,50 @@ class CheckoutController extends Controller
                     'subtotal' => $item->obat->harga * $item->quantity
                 ]);
 
-                $item->obat->decrement('banyak', $item->quantity);
+                // Update stok
+                DB::table('obats')
+                    ->where('id', $item->obat_id)
+                    ->decrement('banyak', $item->quantity);
             }
 
-            // Kosongkan keranjang
+            // Hapus cart
             $user->cart()->delete();
-
+            
             DB::commit();
 
+            // Return response based on request type
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order created successfully',
+                    'redirect' => route('checkout.success', ['order' => $order->id])
+                ]);
+            }
+
             return redirect()->route('checkout.success', ['order' => $order->id])
-                ->with('success', 'Order berhasil dibuat!');
+                ->with('success', 'Order created successfully!');
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Checkout failed: ' . $e->getMessage()); // Logging error
-            return back()->with('error', 'Gagal memproses order. Silakan coba lagi.');
+            Log::error('Checkout failed: ' . $e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to process order. Please try again.'
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to process order. Please try again.');
         }
     }
 
     public function success(Order $order)
     {
         if ($order->user_id !== auth()->id()) {
-            abort(403);
+            abort(403, 'Unauthorized access');
         }
 
         return view('pages.checkout.success', compact('order'))

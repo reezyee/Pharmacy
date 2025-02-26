@@ -9,18 +9,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Resep extends Model
 {
     use HasFactory, SoftDeletes;
+    protected $table = 'reseps'; // Pastikan ini ada
 
-    protected $fillable = [
-        'dokter_id',
-        'pasien_id',
-        'obats',
-        'catatan',
-        'status'
-    ];
-
-    protected $casts = [
-        'obats' => 'array'
-    ];
+    protected $fillable = ['pasien_id', 'tipe', 'dokter_id', 'obats', 'foto_resep', 'catatan', 'status', 'pasien_nama'];
+    protected $casts = ['obats' => 'array', 'foto_resep' => 'array'];
 
     public function dokter()
     {
@@ -32,10 +24,8 @@ class Resep extends Model
         return $this->belongsTo(User::class, 'pasien_id');
     }
 
-    public function obats()
+    public function obatReseps()    
     {
-        return $this->belongsToMany(Obat::class, 'resep_obat')
-            ->withPivot('dosis')
-            ->withTimestamps();
+        return $this->hasMany(ObatResep::class, 'resep_id');
     }
 }

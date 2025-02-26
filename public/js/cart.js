@@ -519,60 +519,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function handleCheckout() {
         try {
-            // Cek apakah ini di halaman checkout atau di modal keranjang
             const isCheckoutPage =
                 window.location.pathname.includes("/checkout");
 
             if (isCheckoutPage) {
-                // Di halaman checkout, ambil data form
-                const pharmacyId = document.querySelector(
-                    '[name="pharmacy_id"]'
+                // Ambil data form
+                const address =
+                    document.querySelector('[name="address"]')?.value;
+                const newAddress = document.querySelector(
+                    '[name="new_address"]'
                 )?.value;
                 const paymentMethod = document.querySelector(
                     '[name="payment_method"]:checked'
                 )?.value;
                 const notes = document.querySelector('[name="notes"]')?.value;
 
-                if (!pharmacyId || !paymentMethod) {
+                if (!address || !paymentMethod) {
                     showPopup("Mohon lengkapi data checkout!", "error");
                     return;
                 }
 
+                // Kirim request checkout
                 const response = await fetch("/checkout/process", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         "X-CSRF-TOKEN": csrfToken,
                     },
+                    credentials: "include", // Pastikan sesi pengguna terbaca
                     body: JSON.stringify({
-                        pharmacy_id: pharmacyId,
+                        address,
+                        new_address: newAddress || null,
                         payment_method: paymentMethod,
-                        notes: notes,
+                        notes: notes || null,
                     }),
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || "Checkout failed");
+                    throw new Error(data.message || "Checkout gagal");
                 }
 
                 if (data.success && data.redirect) {
                     showPopup("Checkout berhasil! Mengarahkan...", "success");
                     setTimeout(() => {
                         window.location.href = data.redirect;
-                    }, 2000);
+                    }, 1000);
                 }
             } else {
-                // Di modal keranjang, redirect ke halaman checkout
+                // Redirect ke halaman checkout
                 const response = await fetch("/checkout", {
                     method: "GET",
                     headers: {
                         "X-CSRF-TOKEN": csrfToken,
                     },
+                    credentials: "include",
                 });
 
-                // Jika response adalah redirect ke login
                 if (response.redirected) {
                     window.location.href = `/login?redirect=${encodeURIComponent(
                         window.location.href
@@ -580,7 +584,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                // Jika berhasil, redirect ke halaman checkout
                 window.location.href = "/checkout";
             }
         } catch (error) {

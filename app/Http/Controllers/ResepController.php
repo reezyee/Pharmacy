@@ -7,6 +7,11 @@ use App\Models\Resep;
 use App\Models\User;
 use App\Models\Obat;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+
 
 class ResepController extends Controller
 {
@@ -24,18 +29,20 @@ class ResepController extends Controller
             });
         }
 
-        $reseps = $query->latest()->paginate(10);
+        $reseps = $query->where('tipe', 'dokter')->latest()->paginate(10);
         $dokters = User::where('role_id', 4)->get();
         $pasiens = User::where('role_id', 5)->get();
         $obats = Obat::all();
 
-        // Pastikan variabel tersedia agar tidak undefined
-        $resepObats = [];
+        // Konversi data obat dari JSON ke array sebelum dikirim ke view
+        $reseps->transform(function ($resep) {
+            $resep->obats = $resep->obats ? json_decode($resep->obats, true) : [];
+            return $resep;
+        });
 
-        return view('pages.admin.resep', compact('reseps', 'dokters', 'pasiens', 'obats', 'resepObats'))
+        return view('pages.admin.resep', compact('reseps', 'dokters', 'pasiens', 'obats'))
             ->with(['title' => 'Resep Obat']);
     }
-
 
 
     public function store(Request $request)
@@ -54,6 +61,7 @@ class ResepController extends Controller
             return [
                 'id' => $obatModel->id,
                 'nama' => $obatModel->nama,
+                'kekuatan_obat' => $obatModel->kekuatan_obat,
                 'dosis' => $obat['dosis'],
             ];
         });
@@ -61,6 +69,7 @@ class ResepController extends Controller
         Resep::create([
             'dokter_id' => Auth::id(),
             'pasien_id' => $pasien->id,
+            'tipe' => 'dokter', // Default dokter karena dibuat secara digital
             'pasien_nama' => $pasien->name, // Simpan nama pasien
             'obats' => json_encode($obatDetails),
         ]);
@@ -74,7 +83,7 @@ class ResepController extends Controller
         $resep = Resep::find($id);
 
         if (!$resep) {
-            return response()->json(['error' => 'Resep tidak ditemukan'], 404);
+            return redirect()->route('admin.resep.index')->with('error', 'Resep tidak ditemukan.');
         }
 
         // Jika relasi obat ada, ambil data obat terkait
@@ -85,6 +94,8 @@ class ResepController extends Controller
             'pasien_id' => $resep->pasien_id,
             'obats' => $obats
         ]);
+
+        return view('admin.resep.edit', compact('resep'));
     }
 
 
@@ -105,6 +116,7 @@ class ResepController extends Controller
             return [
                 'id' => $obatModel->id,
                 'nama' => $obatModel->nama,
+                'kekuatan_obat' => $obatModel->kekuatan_obat,
                 'dosis' => $obat['dosis'],
             ];
         });
@@ -118,14 +130,112 @@ class ResepController extends Controller
         return back()->with('success', 'Resep berhasil diperbarui!');
     }
 
-
-
-
     public function destroy($id)
     {
         $resep = Resep::findOrFail($id);
         $resep->delete();
 
         return back()->with('success', 'Resep berhasil dihapus!');
+    }
+
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'foto_resep.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'final_photos' => 'nullable|string',
+        ]);
+
+
+        $pasienNama = $request->has('pasien_nama') && !empty($request->pasien_nama)
+            ? $request->pasien_nama
+            : Auth::user()->name;
+
+        $pasienId = $request->has('pasien_nama') && !empty($request->pasien_nama)
+            ? null
+            : Auth::user()->id;
+        $filePaths = [];
+
+        // Simpan file yang diunggah langsung
+        if ($request->hasFile('foto_resep')) {
+            foreach ($request->file('foto_resep') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $path = storage_path('app/public/resep/');
+
+                // Cek apakah file dengan konten yang sama sudah ada
+                $existingFile = glob($path . "*"); // Ambil semua file dalam folder
+                $isDuplicate = false;
+
+                foreach ($existingFile as $existing) {
+                    if (md5_file($existing) === md5_file($file)) {
+                        $isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!$isDuplicate) {
+                    $fileName = time() . '_' . $originalName;
+                    $file->move($path, $fileName);
+                    $uploadedFiles[] = $fileName;
+                }
+            }
+        }
+
+
+        // Proses foto dari kamera
+        if ($request->filled('final_photos')) {
+            try {
+                $photos = json_decode($request->final_photos, true);
+
+                if (is_array($photos)) {
+                    foreach ($photos as $photo) {
+                        if (preg_match('/^data:image\/(\w+);base64,/', $photo, $type)) {
+                            $data = substr($photo, strpos($photo, ',') + 1);
+                            $type = strtolower($type[1]); // jpg, png, gif
+
+                            if (in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                                $decodedImage = base64_decode($data);
+
+                                if ($decodedImage !== false) {
+                                    $imageName = 'resep/' . uniqid() . '.' . $type;
+                                    if (Storage::disk('public')->put($imageName, $decodedImage)) {
+                                        $filePaths[] = $imageName;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Error processing photos:', ['error' => $e->getMessage()]);
+                return back()->with('error', 'Gagal memproses foto: ' . $e->getMessage());
+            }
+        }
+
+        // Simpan ke database jika ada file
+        if (!empty($filePaths)) {
+            try {
+                $resep = Resep::create([
+                    'pasien_id' => $pasienId, // Akan null jika pasien input manual
+                    'pasien_nama' => $pasienNama, // Nama pasien sesuai input manual
+                    'tipe' => 'pasien',
+                    'dokter_id' => null,
+                    'foto_resep' => $filePaths, // Tidak perlu json_encode karena sudah ada cast array
+                    'status' => 'Menunggu Verifikasi',
+                    'catatan' => $request->catatan ?? null
+                ]);
+
+                Log::info('Resep saved:', [
+                    'resep_id' => $resep->id,
+                    'file_paths' => $filePaths
+                ]);
+
+                return back()->with('success', 'Resep berhasil diunggah! Menunggu verifikasi apoteker.');
+            } catch (\Exception $e) {
+                Log::error('Database error:', ['error' => $e->getMessage()]);
+                return back()->with('error', 'Gagal menyimpan ke database: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('error', 'Tidak ada file yang berhasil diunggah. Pastikan file atau foto dari kamera sudah valid.');
     }
 }

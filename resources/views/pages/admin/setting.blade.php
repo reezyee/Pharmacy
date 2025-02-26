@@ -9,11 +9,9 @@
                 <form action="{{ route('settings.updateProfile') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mt-4 flex justify-around items-center">
-                        <div class="">
+                        <div class="w-40 h-40 rounded-full border-2 p-1 overflow-hidden">
                             @php
-                                $role = Auth::user()->role->name ?? 'Pelanggan'; // Default ke Pelanggan jika tidak ada role
-
-                                // Warna sesuai role
+                                $role = Auth::user()->role->name ?? 'Pelanggan';
                                 $roleColors = [
                                     'Admin' => [
                                         'bg' => 'bg-purple-100',
@@ -46,32 +44,32 @@
                                     'Pelanggan' => [
                                         'bg' => 'bg-gray-100',
                                         'text' => 'text-gray-700',
-                                        'border' => 'border-gray-700',
+                                        'border' => 'border-gray-500',
                                         'avatar_bg' => 'd1d5db',
                                         'avatar_text' => '374151',
                                     ],
                                 ];
-
-                                // Ambil warna berdasarkan role, jika tidak ada pakai default 'Pelanggan'
                                 $colors = $roleColors[$role] ?? $roleColors['Pelanggan'];
                             @endphp
 
-                            <img src="{{ Auth::user()->avatar
-                                ? asset('storage/' . Auth::user()->avatar)
-                                : 'https://ui-avatars.com/api/?name=' .
-                                    urlencode(Auth::user()->name) .
-                                    '&background=' .
-                                    $colors['avatar_bg'] .
-                                    '&color=' .
-                                    $colors['avatar_text'] }}"
+                            <img id="avatarPreview"
+                                src="{{ Auth::user()->avatar
+                                    ? asset('storage/' . Auth::user()->avatar)
+                                    : 'https://ui-avatars.com/api/?name=' .
+                                        urlencode(Auth::user()->name) .
+                                        '&background=' .
+                                        $colors['avatar_bg'] .
+                                        '&color=' .
+                                        $colors['avatar_text'] }}"
                                 alt="Profile Picture"
-                                class="w-40 h-40 rounded-full border-2 p-1 {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}" />
-
+                                class="w-full h-full rounded-full object-cover {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}" />
                         </div>
                         <div class="">
                             <label for="avatar" class="block text-gray-700">Profile Picture</label>
-                            <input type="file" id="avatar" name="avatar"
+                            <input type="file" id="avatar" name="avatar" accept="image/*"
                                 class="mt-1 block w-full border border-gray-300 rounded-lg p-2" />
+                            <p id="errorMsg" class="text-red-500 text-sm mt-1 hidden">Format file tidak valid. Harap unggah
+                                gambar.</p>
                         </div>
                     </div>
                     <div class="mt-4">

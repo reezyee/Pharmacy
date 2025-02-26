@@ -617,6 +617,141 @@
         window.addEventListener('resize', updateButtonVisibility);
 
         // Load products on page load
+        updateProducts();const updateProducts = debounce(async () => {
+            try {
+                const queryParams = new URLSearchParams();
+                if (activeFilters.search) queryParams.set('search', activeFilters.search);
+                if (activeFilters.kategori_id) queryParams.set('kategori_id', activeFilters
+                    .kategori_id);
+                if (activeFilters.harga_min) queryParams.set('harga_min', activeFilters.harga_min);
+                if (activeFilters.harga_max) queryParams.set('harga_max', activeFilters.harga_max);
+                if (activeFilters.availability) queryParams.set('availability', activeFilters
+                    .availability);
+
+                productsContainer.classList.add('opacity-50');
+                const response = await fetch(`/shop/filter?${queryParams.toString()}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+
+                productsContainer.innerHTML = data.html;
+                paginationContainer.innerHTML = data.pagination;
+
+                window.history.pushState({}, '',
+                    `${window.location.pathname}?${queryParams.toString()}`);
+
+                // Re-setup cart event listeners after content update
+                setupCartEventListeners();
+            } catch (error) {
+                console.error('Error updating products:', error);
+            } finally {
+                productsContainer.classList.remove('opacity-50');
+            }
+        }, 300);
+
+        searchInput.addEventListener('input', (e) => {
+            activeFilters.search = e.target.value;
+            updateProducts();
+        });
+
+        priceRangeSelect.addEventListener('change', (e) => {
+            const range = priceRanges[e.target.value];
+            if (range) {
+                activeFilters.harga_min = range.min;
+                activeFilters.harga_max = range.max;
+            } else {
+                activeFilters.harga_min = '';
+                activeFilters.harga_max = '';
+            }
+            updateProducts();
+        });
+
+        availabilitySelect.addEventListener('change', (e) => {
+            activeFilters.availability = e.target.value;
+            updateProducts();
+        });
+
+        resetButton.addEventListener('click', () => {
+            activeFilters = {
+                search: '',
+                kategori_id: '',
+                harga_min: '',
+                harga_max: '',
+                availability: ''
+            };
+            searchInput.value = '';
+            priceRangeSelect.value = '';
+            availabilitySelect.value = '';
+            document.querySelectorAll('.category-item').forEach((item) => {
+                item.classList.remove('bg-blue-50');
+                item.querySelector('.category-indicator').classList.add('hidden');
+            });
+            updateProducts();
+        });
+
+        function updateButtonVisibility() {
+            prevKategoriButton.style.display = kategoriItems.scrollLeft > 0 ? 'block' : 'none';
+            nextKategoriButton.style.display =
+                kategoriItems.scrollLeft + kategoriItems.clientWidth < kategoriItems.scrollWidth - 10 ?
+                'block' :
+                'none';
+        }
+
+        // Handle category filter selection
+        kategoriItems.addEventListener('click', function(e) {
+            const categoryItem = e.target.closest('.category-item');
+            if (categoryItem) {
+                const kategoriId = categoryItem.dataset.kategoriId;
+                const indicator = categoryItem.querySelector('.category-indicator');
+
+                // Jika kategori yang sama diklik lagi, reset filter
+                if (activeFilters.kategori_id === kategoriId) {
+                    activeFilters.kategori_id = ''; // Hapus filter kategori
+                    categoryItem.classList.remove('bg-blue-50'); // Hapus highlight
+                    indicator.classList.add('hidden'); // Sembunyikan indikator
+                } else {
+                    activeFilters.kategori_id = kategoriId;
+
+                    // Reset semua kategori lainnya
+                    const allCategories = document.querySelectorAll('.category-item');
+                    allCategories.forEach((item) => {
+                        item.classList.remove('bg-blue-50');
+                        item.querySelector('.category-indicator').classList.add('hidden');
+                    });
+
+                    // Tandai kategori yang dipilih
+                    categoryItem.classList.add('bg-blue-50');
+                    indicator.classList.remove('hidden'); // Tampilkan indikator
+                }
+                updateProducts();
+            }
+        });
+
+        prevKategoriButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            kategoriItems.scrollBy({
+                left: -200,
+                behavior: 'smooth'
+            });
+        });
+
+        nextKategoriButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            kategoriItems.scrollBy({
+                left: 200,
+                behavior: 'smooth'
+            });
+        });
+
+        kategoriItems.addEventListener('scroll', updateButtonVisibility);
+        window.addEventListener('resize', updateButtonVisibility);
+
+        // Load products on page load
         updateProducts();
 
         // Initialize cart functionality

@@ -6,8 +6,48 @@
             <a href="{{ route('chat.index') }}" class="text-blue-500 mr-3">
                 &larr; Back
             </a>
-            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" class="w-10 h-10 rounded-full border"
-                alt="Avatar">
+            @php
+                $role = $user->role->name ?? 'Dokter'; // Gunakan default jika tidak ada role
+                $roleColors = [
+                    'Dokter' => [
+                        'bg' => 'bg-blue-100',
+                        'text' => 'text-blue-700',
+                        'border' => 'border-blue-700',
+                        'avatar_bg' => '93c5fd',
+                        'avatar_text' => '1e3a8a',
+                    ],
+                    'Apoteker' => [
+                        'bg' => 'bg-green-100',
+                        'text' => 'text-green-700',
+                        'border' => 'border-green-700',
+                        'avatar_bg' => 'a3e635',
+                        'avatar_text' => '166534',
+                    ],
+                ];
+
+                // Gunakan warna default jika role tidak ditemukan
+                $defaultColors = [
+                    'bg' => 'bg-gray-100',
+                    'text' => 'text-gray-700',
+                    'border' => 'border-gray-700',
+                    'avatar_bg' => 'd1d5db',
+                    'avatar_text' => '374151',
+                ];
+
+                $colors = $roleColors[$role] ?? $defaultColors;
+            @endphp
+
+            <div class="w-10 h-10 rounded-full overflow-hidden border {{ $colors['border'] }}">
+                <img src="{{ $user->avatar
+                    ? asset('storage/' . $user->avatar)
+                    : 'https://ui-avatars.com/api/?name=' .
+                        urlencode($user->name ?? 'User') .
+                        '&background=' .
+                        $colors['avatar_bg'] .
+                        '&color=' .
+                        $colors['avatar_text'] }}"
+                    class="w-full h-full object-cover" alt="Profile Picture">
+            </div>
             <div class="ml-3">
                 <p class="text-lg font-semibold">{{ $user->name }}</p>
                 <p class="text-sm text-gray-500">{{ $user->role->name }}</p>

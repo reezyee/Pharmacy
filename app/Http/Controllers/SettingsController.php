@@ -11,8 +11,18 @@ class SettingsController extends Controller
 {
     public function index()
     {
+        // Mengecek peran pengguna yang sedang login
+        $role = Auth::user()->role->name ?? 'Pelanggan';
+
+        // Jika peran adalah Pelanggan, arahkan ke halaman setting pelanggan
+        if ($role === 'Pelanggan') {
+            return view('pages.user.setting')->with(['title' => 'Setting']);
+        }
+
+        // Jika bukan Pelanggan, arahkan ke halaman setting admin
         return view('pages.admin.setting')->with(['title' => 'Setting']);
     }
+
 
     public function updateProfile(Request $request)
     {

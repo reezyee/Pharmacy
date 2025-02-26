@@ -49,7 +49,7 @@
                                     class="absolute inset-y-0 right-2 flex items-center justify-center w-fit px-2 text-gray-500">
                                     <i id="eye-icon" class="fa fa-eye text-gray-500"></i>
                                 </button>
-                                <a href="{{ url('password/reset') }}" class="text-blue-400 text-[12px] float-end w-full">Lupa Sandi?</a>
+                                <a href="{{ route('password.request') }}" class="text-blue-400 text-[12px] float-end w-full">Lupa Sandi?</a>
                             </div>
                         </div>
 
@@ -59,7 +59,7 @@
                                 class="bg-blue-600 text-white border border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium rounded-lg text-sm w-full py-2 me-2 mb-2">
                                 Masuk
                             </button>
-                            <a href="{{ url('register') }}" class="text-blue-400 text-[12px]">Buat Akun?</a>
+                            <a href="{{ route('register') }}" class="text-blue-400 text-[12px]">Buat Akun?</a>
                         </div>
                         <div class="flex justify-between">
                             <p class="border-b w-[25%] mb-2">
