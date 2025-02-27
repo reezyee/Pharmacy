@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -15,9 +16,9 @@ class UserController extends Controller
         $users = User::with('role')->whereHas('role', function ($query) {
             $query->where('name', '!=', 'Pelanggan');
         })->paginate(10);
-        
+
         $roles = Role::where('name', '!=', 'Pelanggan')->get();
-        
+
         return view('pages.admin.akun', compact('users', 'roles'))->with(['title' => 'User Management']);
     }
 
@@ -53,7 +54,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|string|min:6',
             'role_id' => 'required|exists:roles,id',
         ]);
 
@@ -63,22 +63,18 @@ class UserController extends Controller
             'role_id' => $validated['role_id'],
         ];
 
-        // Only update password if it's provided
-        if (!empty($validated['password'])) {
-            $updateData['password'] = Hash::make($validated['password']);
+        if ($request->filled('password')) {
+            $validatedPassword = $request->validate([
+                'password' => 'nullable|string|min:6',
+            ]);
+            $updateData['password'] = Hash::make($validatedPassword['password']);
         }
 
         $user->update($updateData);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'User berhasil diperbarui',
-                'user' => $user
-            ]);
-        }
-
-        return redirect()->route('admin.akun')->with('success', 'User berhasil diperbarui');
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => 'User berhasil diperbarui', 'user' => $user])
+            : redirect()->route('admin.akun')->with('success', 'User berhasil diperbarui');
     }
 
     public function destroy(Request $request, User $user)
@@ -105,5 +101,31 @@ class UserController extends Controller
         }
 
         return redirect()->route('admin.akun')->with('success', 'User berhasil dihapus');
+    }
+
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Password lama harus diisi.',
+            'new_password.required' => 'Password baru harus diisi.',
+            'new_password.min' => 'Password baru minimal 8 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $user = Auth::user();
+
+        // Periksa apakah password lama cocok
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
+        }
+
+        // Update password
+        $user->update(['password' => Hash::make($request->new_password)]);
+
+        return redirect()->route('password.change')->with('success', 'Password berhasil diubah.');
     }
 }

@@ -14,8 +14,8 @@
     <title>{{ $title }}</title>
 </head>
 
-<body class="h-full">
-    <div class="min-h-full">
+<body class="">
+    <div class="">
         @include('components.navbar')
         <main>
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -25,5 +25,11 @@
         @include('components.footer')
     </div>
     @stack('scripts')
+    <script>
+        window.Echo.private('App.Models.User.' + {{ auth()->id() }})
+            .notification((notification) => {
+                alert(notification.message);
+            });
+    </script>    
 </body>
 </html>

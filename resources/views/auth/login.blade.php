@@ -49,7 +49,7 @@
                                     class="absolute inset-y-0 right-2 flex items-center justify-center w-fit px-2 text-gray-500">
                                     <i id="eye-icon" class="fa fa-eye text-gray-500"></i>
                                 </button>
-                                <a href="{{ route('password.request') }}" class="text-blue-400 text-[12px] float-end w-full">Lupa Sandi?</a>
+                                <a href="{{ url('/forgot-password') }}" class="text-blue-400 text-[12px] float-end w-full">Lupa Sandi?</a>
                             </div>
                         </div>
 

@@ -50,16 +50,20 @@ class LoginController extends Controller
             $user->save();
         }
 
-        // Definisikan $credentials dengan benar
         $credentials = [$field => $request->email_or_phone, 'password' => $request->password];
 
         if (Auth::attempt($credentials)) {
             // Merge session cart with database cart
             app(CartController::class)->mergeCartWithDatabase();
 
-            // Redirect with return URL if provided
-            $redirect = $request->input('redirect', '/admin');
-            return redirect()->intended($redirect)->with('success', 'Login Berhasil');
+            // Cek role dan redirect sesuai role
+            $roleName = $user->role->name ?? 'Pelanggan'; // Default ke Pelanggan jika role tidak ditemukan
+
+            if ($roleName === 'Pelanggan') {
+                return redirect()->intended('/user')->with('success', 'Login Berhasil');
+            }
+
+            return redirect()->intended('/admin')->with('success', 'Login Berhasil');
         }
 
         return back()->withErrors(['password' => 'Sandi yang anda masukan salah'])->withInput();

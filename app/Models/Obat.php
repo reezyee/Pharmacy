@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Obat extends Model
+class   Obat extends Model
 {
     use HasFactory;
 
@@ -45,5 +45,10 @@ class Obat extends Model
         return $this->belongsToMany(Resep::class, 'obat_reseps')
             ->withPivot('dosis')
             ->withTimestamps();
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'obat_id');
     }
 }

@@ -11,8 +11,4 @@ class Kategori extends Model
 
     protected $fillable = ['nama', 'image'];
 
-    // public function children()
-    // {
-    //     return $this->hasMany(ChildKategori::class, 'parent_kategori_id');
-    // }
 }

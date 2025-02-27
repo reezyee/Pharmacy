@@ -8,6 +8,7 @@ use Chatify\Facades\ChatifyMessenger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Pusher\Pusher;
+use App\Notifications\ChatNotification;
 
 class ChatController extends Controller
 {
@@ -88,6 +89,7 @@ class ChatController extends Controller
     }
 
 
+
     public function sendMessage(Request $request)
     {
         try {
@@ -106,18 +108,13 @@ class ChatController extends Controller
             $message = ChatifyMessenger::newMessage($messageData);
 
             if ($message) {
-                // Trigger Pusher event
-                $pusher = new Pusher(
-                    config('broadcasting.connections.pusher.key'),
-                    config('broadcasting.connections.pusher.secret'),
-                    config('broadcasting.connections.pusher.app_id'),
-                    [
-                        'cluster' => config('broadcasting.connections.pusher.options.cluster'),
-                        'useTLS' => true
-                    ]
-                );
+                $receiver = User::findOrFail($request->receiver_id);
 
-                $pusher->trigger('chat-channel', 'new-message', [
+                // Kirim notifikasi ke penerima
+                $receiver->notify(new ChatNotification($request->message, auth()->user()));
+
+                // Trigger Pusher event
+                $this->pusher->trigger('chat-channel', 'new-message', [
                     'message' => $message,
                     'from_id' => auth()->id(),
                     'to_id' => $request->receiver_id,

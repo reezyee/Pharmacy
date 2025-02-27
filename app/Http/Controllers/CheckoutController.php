@@ -27,7 +27,7 @@ class CheckoutController extends Controller
         $totalAmount = $cartItems->sum(fn($item) => $item->obat->harga * $item->quantity);
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+            return redirect()->route('obat.pelanggan')->with('error', 'Your cart is empty.');
         }
 
         return view('pages.checkout.index', compact('cartItems', 'totalAmount', 'address'))

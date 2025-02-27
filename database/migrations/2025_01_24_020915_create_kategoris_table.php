@@ -17,21 +17,7 @@ return new class extends Migration
             $table->string('image')->nullable(); // Menyimpan path gambar
             $table->timestamps(); 
         });
-        
 
-        // Schema::create('child_kategoris', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->string('nama');
-        //     $table->foreignId('parent_kategori_id')->nullable()->constrained('kategoris')->onDelete('set null');
-        //     $table->timestamps();
-        // });
-
-        // Schema::create('subchild_kategoris', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->string('nama');
-        //     $table->foreignId('parent_child_kategori_id')->nullable()->constrained('child_kategoris')->onDelete('set null');
-        //     $table->timestamps();
-        // });
     }
 
     /**
@@ -39,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Schema::dropIfExists('subchild_kategoris');
-        // Schema::dropIfExists('child_kategoris');
         Schema::dropIfExists('kategoris');
     }
 };

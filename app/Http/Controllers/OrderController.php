@@ -7,6 +7,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\OrderStatusNotification;
+
 
 class OrderController extends Controller
 {
@@ -68,7 +70,7 @@ class OrderController extends Controller
             $oldStatus = $order->status;
             $newStatus = $request->status;
 
-            // If order is being cancelled, restore stock
+            // Jika dibatalkan, kembalikan stok
             if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
                 foreach ($order->items as $item) {
                     DB::table('obats')
@@ -77,23 +79,27 @@ class OrderController extends Controller
                 }
             }
 
-            // Update order status
+            // Update status pesanan
             $order->update(['status' => $newStatus]);
 
-            // If order is completed, update payment status
+            // Jika pesanan selesai, ubah status pembayaran
             if ($newStatus === 'completed') {
                 $order->update(['payment_status' => 'paid']);
             }
 
+            // Kirim notifikasi ke user
+            $order->user->notify(new OrderStatusNotification("Status pesanan Anda diperbarui menjadi: " . $newStatus));
+
             DB::commit();
 
-            return back()->with('success', 'Order status has been updated successfully.');
+            return back()->with('success', 'Status pesanan berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to update order status: ' . $e->getMessage());
-            return back()->with('error', 'Failed to update order status. Please try again.');
+            Log::error('Gagal memperbarui status pesanan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui status pesanan. Coba lagi nanti.');
         }
     }
+
     public function cancelOrder(Order $order)
     {
         if (auth()->id() !== $order->user_id) {

@@ -11,6 +11,8 @@ use App\Models\BentukObat;
 use Illuminate\Support\Facades\Storage;
 use App\Models\JenisObat;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\KetersediaanObatNotification;
+use Illuminate\Support\Facades\Notification;
 
 class ObatController extends Controller
 {
@@ -30,7 +32,7 @@ class ObatController extends Controller
         $bentuk_obat = BentukObat::all();
         return view('obat.create', compact('kategoris', 'jenis_obat', 'bentuk_obat'));
     }
-    
+
 
 
     public function store(Request $request)
@@ -117,5 +119,19 @@ class ObatController extends Controller
         }
 
         return redirect()->route('obat.index')->with('success', 'Obat berhasil dihapus.');
+    }
+
+
+    public function updateStock(Request $request, $id)
+    {
+        $obat = Obat::findOrFail($id);
+        $obat->banyak = $request->banyak;
+        $obat->save();
+
+        if ($obat->banyak > 0) {
+            Notification::send(auth()->user(), new KetersediaanObatNotification($obat));
+        }
+
+        return back()->with('success', 'Stok berhasil diperbarui!');
     }
 }

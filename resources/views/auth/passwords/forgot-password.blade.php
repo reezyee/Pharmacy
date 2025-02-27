@@ -22,13 +22,14 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('password.email') }}">
+        <form method="POST" action="{{ url('/forgot-password') }}">
             @csrf
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" name="email" class="form-control" placeholder="Masukkan Email Anda" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Kirim Link Reset</button>
-        </form>
+            <input type="email" name="email" required placeholder="Masukkan email Anda">
+            <button type="submit">Kirim Link Reset</button>
+        </form>        
+        @if (session('status'))
+            <p>{{ session('status') }}</p>
+        @endif
+                    
     </div>
 @endsection

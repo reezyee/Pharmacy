@@ -123,7 +123,10 @@
                     Recipes
                 </a></li>
             <li><a href="/admin/obat-resep" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m424-318 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm280-590q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                        <path
+                            d="m424-318 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm280-590q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z" />
+                    </svg>
                     Recipe Verifications
                 </a></li>
             <li><a href="/admin/pesanan" class="flex gap-2 p-2 rounded-lg hover:bg-gray-200">
@@ -199,7 +202,7 @@
 
                     <!-- Notifications dropdown -->
                     <div id="notifications-dropdown"
-                        class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg hidden">
+                        class="absolute right-0 mt-2 w-80 z-50 bg-white rounded-lg shadow-lg hidden">
                         <div class="p-4">
                             <h3 class="text-lg font-semibold mb-2">Notifications</h3>
                             <div id="notifications-list" class="space-y-2">
@@ -262,14 +265,45 @@
     updateDateTime(); // Panggil sekali saat pertama kali halaman dimuat
 
 
-    function toggleNotifications() {
-        const dropdown = document.getElementById('notifications-dropdown');
-        dropdown.classList.toggle('hidden');
+    function fetchNotifications() {
+        fetch('/notifications')
+            .then(response => response.json())
+            .then(data => {
+                let notifList = document.getElementById('notifications-list');
+                let notifDot = document.getElementById('notification-dot');
+                let notifDropdown = document.getElementById('notifications-dropdown');
 
-        // Mark notifications as read
-        const notificationDot = document.getElementById('notification-dot');
-        if (notificationDot) {
-            notificationDot.classList.add('hidden');
-        }
+                notifList.innerHTML = '';
+
+                if (data.length > 0) {
+                    notifDot.classList.remove('hidden'); // Tampilkan titik merah notifikasi
+                    data.forEach(notif => {
+                        notifList.innerHTML += `
+                            <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+                                <span>${notif.data.message}</span>
+                                <button onclick="markAsRead('${notif.id}')" class="text-blue-500 text-sm">Tandai Dibaca</button>
+                            </div>`;
+                    });
+                } else {
+                    notifDot.classList.add('hidden'); // Sembunyikan titik merah jika tidak ada notif
+                    notifList.innerHTML = `<div class="text-center text-gray-500">Tidak ada notifikasi</div>`;
+                }
+            });
     }
+
+    function markAsRead(id) {
+        fetch(`/notifications/${id}/read`, {
+                method: 'POST'
+            })
+            .then(() => fetchNotifications());
+    }
+
+    function toggleNotifications() {
+        let dropdown = document.getElementById('notifications-dropdown');
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Panggil setiap 5 detik agar real-time
+    setInterval(fetchNotifications, 5000);
+    fetchNotifications();
 </script>

@@ -106,7 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         if (Object.keys(data).length === 0) {
                             cartItems.innerHTML =
-                                '<p class="text-center text-gray-500">Keranjang Anda kosong</p>';
+                                `<div class="flex justify-center">
+                                <p class="text-center text-gray-500">Keranjang Anda kosong</p>
+                                    <a href="/shop" class="btn-primary mt-4">Belanja Obat</a>                                
+                                `;
                         } else {
                             // Create cart items list
                             const itemsList = document.createElement('div');

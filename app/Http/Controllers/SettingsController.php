@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Pharmacy;
 
 class SettingsController extends Controller
 {
@@ -20,9 +21,13 @@ class SettingsController extends Controller
         }
 
         // Jika bukan Pelanggan, arahkan ke halaman setting admin
-        return view('pages.admin.setting')->with(['title' => 'Setting']);
+        // Get pharmacy data for admin view
+        $pharmacy = Pharmacy::first(); // Or use a more specific query based on your requirements
+        return view('pages.admin.setting')->with([
+            'title' => 'Setting',
+            'pharmacy' => $pharmacy
+        ]);
     }
-
 
     public function updateProfile(Request $request)
     {
@@ -97,5 +102,44 @@ class SettingsController extends Controller
 
         // Redirect dengan pesan sukses
         return redirect()->route('settings.index')->with('success', 'Notification settings updated.');
+    }
+
+    // Add method to update pharmacy information
+    public function updatePharmacy(Request $request)
+    {
+        // Validate pharmacy data
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'nomor_izin_apotek' => 'required|string|max:255',
+            'nama_apoteker' => 'required|string|max:255',
+            'sipa' => 'required|string|max:255',
+            'jadwal_praktik' => 'required|string',
+            'address' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        // Find or create pharmacy record
+        $pharmacy = Pharmacy::first();
+        if (!$pharmacy) {
+            $pharmacy = new Pharmacy();
+        }
+
+        // Update pharmacy data
+        $pharmacy->name = $request->input('name');
+        $pharmacy->nomor_izin_apotek = $request->input('nomor_izin_apotek');
+        $pharmacy->nama_apoteker = $request->input('nama_apoteker');
+        $pharmacy->sipa = $request->input('sipa');
+        $pharmacy->jadwal_praktik = $request->input('jadwal_praktik');
+        $pharmacy->address = $request->input('address');
+        $pharmacy->latitude = $request->input('latitude');
+        $pharmacy->longitude = $request->input('longitude');
+        $pharmacy->is_active = $request->has('is_active') ? 1 : 0;
+
+        // Save pharmacy data
+        $pharmacy->save();
+
+        // Redirect with success message
+        return redirect()->route('settings.index')->with('success', 'Pharmacy information updated successfully.');
     }
 }
