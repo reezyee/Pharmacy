@@ -18,20 +18,31 @@ class ObatResepController extends Controller
 {
     public function index()
     {
-        $resepsMenunggu = Resep::where('status', 'Menunggu Verifikasi')->with(['dokter', 'pasien'])->latest()->get();
-        $resepsTerverifikasi = Resep::where('status', 'Terverifikasi')->with(['dokter', 'pasien'])->latest()->get();
-        $resepsDitolak = Resep::where('status', 'Ditolak')->with(['dokter', 'pasien'])->latest()->get();
 
-        $totalResep = Resep::count();
+        $user = Auth::user();
+
+        // Ambil hanya resep milik pelanggan yang sedang login
+        $resepsQuery = Resep::with(['dokter', 'pasien'])
+            ->where('pasien_id', $user->id)
+            ->latest();
+
+        // Ambil data resep berdasarkan status
+        $resepsMenunggu = (clone $resepsQuery)->where('status', 'Menunggu Verifikasi')->get();
+        $resepsTerverifikasi = (clone $resepsQuery)->where('status', 'Terverifikasi')->get();
+        $resepsDitolak = (clone $resepsQuery)->where('status', 'Ditolak')->get();
+        $resepsSelesai = (clone $resepsQuery)->where('status', 'Ditebus')->get();
+
+        // Hitung jumlah resep
+        $totalResep = $resepsQuery->count();
         $menunggu = $resepsMenunggu->count();
         $terverifikasi = $resepsTerverifikasi->count();
         $ditolak = $resepsDitolak->count();
+        $selesai = $resepsSelesai->count();
 
+        // Ubah data menjadi format JSON yang sesuai
         $ubahJson = function ($reseps) {
             return $reseps->map(function ($resep) {
-                $resep->obats = collect($resep->obats) // Langsung pakai array dari model
-                    ->filter()
-                    ->all();
+                $resep->obats = collect($resep->obats)->filter()->all();
                 return $resep;
             });
         };
@@ -39,18 +50,23 @@ class ObatResepController extends Controller
         $resepsMenunggu = $ubahJson(collect($resepsMenunggu));
         $resepsTerverifikasi = $ubahJson(collect($resepsTerverifikasi));
         $resepsDitolak = $ubahJson(collect($resepsDitolak));
+        $resepsSelesai = $ubahJson(collect($resepsSelesai));
+
         $obats = Obat::all();
+
 
         return view('pages.admin.obat-resep', compact(
             'resepsMenunggu',
             'resepsTerverifikasi',
             'resepsDitolak',
+            'resepsSelesai',
             'totalResep',
             'menunggu',
             'terverifikasi',
             'ditolak',
-            'obats'
-        ))->with(['title' => 'Verifikasi Resep']);
+            'obats',
+            'selesai'
+        ))->with(['title' => 'Verification']);
     }
 
     public function verify(Request $request, $id)

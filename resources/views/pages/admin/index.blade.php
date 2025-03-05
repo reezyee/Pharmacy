@@ -4,7 +4,7 @@
     <x-slot:p>{{ $title }}</x-slot:p>
     
     <!-- Financial Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
         @foreach ($financialData as $key => $data)
             @php
                 $growth = round((($data['current'] - $data['previous']) / $data['previous']) * 100, 1);
@@ -18,7 +18,11 @@
                             {{ $isPositive ? '+' : '' }}{{ $growth }}%
                         </span>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900 mb-1">${{ number_format($data['current']) }}</p>
+                    @if($key == 'revenue')
+                        <p class="text-3xl font-bold text-gray-900 mb-1">Rp. {{ number_format($data['current']) }}</p>
+                    @else
+                        <p class="text-3xl font-bold text-gray-900 mb-1">{{ number_format($data['current']) }}</p>
+                    @endif
                     <p class="text-sm text-gray-500 flex items-center gap-1">
                         compared to last month
                         <span class="inline-block">
@@ -134,16 +138,7 @@
     }
 
     function drawSalesChart() {
-        var data = google.visualization.arrayToDataTable([
-            ['Day', 'Sales'],
-            ['Mon', 1000],
-            ['Tue', 1170],
-            ['Wed', 660],
-            ['Thu', 1030],
-            ['Fri', 2000],
-            ['Sat', 3000],
-            ['Sun', 2500]
-        ]);
+        var data = google.visualization.arrayToDataTable(@json($salesData));
         var options = {
             title: '',
             colors: ['#1E88E5'],
@@ -152,6 +147,13 @@
                 width: '90%',
                 height: '80%'
             },
+            hAxis: {
+                title: 'Day of Week'
+            },
+            vAxis: {
+                title: 'Sales (Rp)',
+                minValue: 0
+            }
         };
         var chart = new google.visualization.ColumnChart(document.getElementById('sales_chart'));
         chart.draw(data, options);
@@ -167,13 +169,20 @@
                 width: '90%',
                 height: '80%'
             },
+            hAxis: {
+                title: 'Date'
+            },
+            vAxis: {
+                title: 'Income (Rp)',
+                minValue: 0
+            }
         };
         var chart = new google.visualization.AreaChart(document.getElementById('sales_funnel'));
         chart.draw(data, options);
     }
 
     function drawCategorySales() {
-        var data = google.visualization.arrayToDataTable(@json($categorySales))
+        var data = google.visualization.arrayToDataTable(@json($categorySales));
         var options = {
             title: '',
             pieHole: 0.4,
@@ -182,6 +191,7 @@
                 width: '90%',
                 height: '80%'
             },
+            legend: { position: 'right' }
         };
         var chart = new google.visualization.PieChart(document.getElementById('category_sales'));
         chart.draw(data, options);

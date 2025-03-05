@@ -49,15 +49,16 @@ class GoogleController extends Controller
         app(CartController::class)->mergeCartWithDatabase();
 
         // Redirect dengan URL yang sesuai (gunakan input 'redirect' jika ada)
-        $redirect = $request->input('redirect', route('user'));
+        $redirect = $request->input('redirect', route('user.dashboard'));
         return redirect()->intended($redirect);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
-        session()->invalidate();
-        session()->regenerateToken();
-        return redirect('https://accounts.google.com/Logout?continue=' . urlencode(route('login')));
-    }
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    
+        return redirect('/')->with('success', 'Logout berhasil');
+    }    
 }

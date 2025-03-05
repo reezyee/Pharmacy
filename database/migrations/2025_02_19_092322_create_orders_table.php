@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('payment_method');
             $table->string('payment_status')->default('pending');
             $table->text('shipping_address');
+            $table->string('payment_proof')->nullable()->after('payment_status');
             $table->text('notes')->nullable();
             $table->string('cart_token')->nullable();
             $table->timestamps();

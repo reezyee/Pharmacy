@@ -30,7 +30,7 @@ class CheckoutResepController extends Controller
 
     public function process(Request $request)
     {
-           
+
         $request->validate([
             'resep_id' => 'required|exists:reseps,id',
             'payment_method' => 'required|in:cop,cod,transfer',
@@ -46,8 +46,12 @@ class CheckoutResepController extends Controller
                 ->firstOrFail();
 
             $totalAmount = $resep->obatReseps->sum(fn($item) => optional($item->obat)->harga * (int) preg_replace('/\D/', '', $item->dosis));
-            $shippingCost = in_array($request->payment_method, ['cod', 'transfer']) ? 10000 : 0;
-            $handlingFee = $request->payment_method === 'cod' ? 1000 : 0;
+
+            $gratisOngkirMin = 100000; // Minimal belanja untuk gratis ongkir
+            $shippingCost = ($totalAmount >= $gratisOngkirMin) ? 0 : 10000;
+            $handlingFee = ($request->payment_method === 'cod') ? 1000 : 0;
+
+            // Hitung total akhir
             $grandTotal = $totalAmount + $shippingCost + $handlingFee;
 
             // Pastikan semua obat memiliki stok cukup sebelum checkout
@@ -94,21 +98,20 @@ class CheckoutResepController extends Controller
 
             return response()->json([
                 'success' => true,
-                'redirect' => route('checkout.success_resep', ['order' => $order->id])
+                'redirect' => route('checkout.resep.success', ['order' => $order->id])
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-        
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
                 ], 500);
             }
-        
+
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-        
     }
 
     public function checkoutPage($id)

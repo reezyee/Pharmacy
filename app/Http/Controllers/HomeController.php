@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategori;
 use App\Models\Obat;
+use App\Models\Pharmacy;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -17,7 +18,9 @@ class HomeController extends Controller
     {
         // Get all categories
         $kategoris = Kategori::take(6)->get();
-        
+
+        $pharmacies = Pharmacy::get();
+
         // Get medicines grouped by category for carousels
         $obatsByKategori = [];
         
@@ -34,9 +37,10 @@ class HomeController extends Controller
         }
         
         return view('pages.index', [
-            'title' => 'Apotek Online - Solusi Kesehatan Terpercaya',
+            'title' => 'Apotek Amanah',
             'kategoris' => $kategoris,
-            'obatsByKategori' => $obatsByKategori
+            'obatsByKategori' => $obatsByKategori,
+            'pharmacies' => $pharmacies,
         ]);
     }
 }

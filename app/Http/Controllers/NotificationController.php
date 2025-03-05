@@ -16,8 +16,9 @@ class NotificationController extends Controller
         $notification = auth()->user()->notifications()->find($id);
         if ($notification) {
             $notification->markAsRead();
+            return response()->json(['message' => 'Notifikasi telah dibaca']);
         }
 
-        return response()->json(['message' => 'Notifikasi telah dibaca']);
+        return response()->json(['message' => 'Notifikasi tidak ditemukan'], 404);
     }
 }

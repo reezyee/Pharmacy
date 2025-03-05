@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Obat;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 
 class DashboardController extends Controller
 {
@@ -47,60 +51,154 @@ class DashboardController extends Controller
             return view('pages.user.index', compact('totalOrders', 'completedOrders', 'cancelledOrders', 'recentOrders',  'pendingOrders', 'processingOrders', 'completedOrders', 'cancelledOrders'))
                 ->with(['title' => 'Dashboard']);
         } else {
-            // Data dashboard untuk admin tetap sama seperti sebelumnya
-            $salesData = [
-                ['Day', 'Sales'],
-                ['Mon', 1000],
-                ['Tue', 1500],
-                ['Wed', 1200],
-                ['Thu', 1800],
-                ['Fri', 2000],
-                ['Sat', 3100],
-                ['Sun', 1500],
-            ];
+            // Admin Dashboard - Make it dynamic
 
-            $salesFunnel = [
-                ['Stage', 'Value'],
-                ['1 Jan', 4562],
-                ['2 Jan', 2562],
-                ['3 Jan', 1262],
-                ['4 Jan', 1000],
-                ['5 Jan', 4000],
-                ['6 Jan', 4530],
-                ['7 Jan', 5000],
-            ];
+            // Get weekly sales data for sales chart
+            $salesData = [['Day', 'Sales']];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $dayName = $date->format('D');
 
-            $categorySales = [
-                ['Category', 'Sales'],
-                ['Paracetamol', 25],
-                ['Panadol', 35],
-                ['Tolak Angin', 40],
-            ];
+                $daySales = Order::whereDate('created_at', $date->toDateString())
+                    ->where('status', '!=', 'cancelled')
+                    ->sum('total_amount');
+
+                $salesData[] = [$dayName, (float)$daySales];
+            }
+
+            // Get daily income for sales funnel (last 7 days)
+            $salesFunnel = [['Stage', 'Value']];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $dateName = $date->format('j M');
+
+                $dayIncome = Order::whereDate('created_at', $date->toDateString())
+                    ->where('status', '!=', 'cancelled')
+                    ->sum('total_amount');
+
+                $salesFunnel[] = [$dateName, (float)$dayIncome];
+            }
+
+            // Get category sales data
+            $categorySales = [['Category', 'Sales']];
+            $kategoris = DB::table('obats')
+                ->join('kategoris', 'obats.kategori_id', '=', 'kategoris.id')
+                ->join('order_items', 'obats.id', '=', 'order_items.obat_id')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.status', '!=', 'cancelled')
+                ->select('kategoris.nama', DB::raw('SUM(order_items.subtotal) as total'))
+                ->groupBy('kategoris.nama')
+                ->orderBy('total', 'desc')
+                ->limit(3)
+                ->get();
+
+            foreach ($kategoris as $kategori) {
+                $categorySales[] = [$kategori->nama, (float)$kategori->total];
+            }
+
+            // Get financial data
+            $currentMonth = Carbon::now()->startOfMonth();
+            $previousMonth = Carbon::now()->subMonth()->startOfMonth();
+
+            // Calculate revenue
+            $currentRevenue = Order::where('status', '!=', 'cancelled')
+                ->whereMonth('created_at', $currentMonth->month)
+                ->whereYear('created_at', $currentMonth->year)
+                ->sum('total_amount');
+
+            $previousRevenue = Order::where('status', '!=', 'cancelled')
+                ->whereMonth('created_at', $previousMonth->month)
+                ->whereYear('created_at', $previousMonth->year)
+                ->sum('total_amount');
+
+            // Get revenue chart data for last 10 days
+            $revenueChartData = [];
+            for ($i = 9; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $dayRevenue = Order::whereDate('created_at', $date->toDateString())
+                    ->where('status', '!=', 'cancelled')
+                    ->sum('total_amount');
+
+                $revenueChartData[] = (float)$dayRevenue;
+            }
+
+            // Calculate visitors (using orders as proxy for visitors)
+            $currentVisitors = Order::whereMonth('created_at', $currentMonth->month)
+                ->whereYear('created_at', $currentMonth->year)
+                ->count();
+
+            $previousVisitors = Order::whereMonth('created_at', $previousMonth->month)
+                ->whereYear('created_at', $previousMonth->year)
+                ->count();
+
+            // Get visitors chart data
+            $visitorsChartData = [];
+            for ($i = 9; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $dayVisitors = Order::whereDate('created_at', $date->toDateString())->count();
+                $visitorsChartData[] = $dayVisitors;
+            }
+
+            // Calculate transactions
+            $currentTransactions = Order::whereMonth('created_at', $currentMonth->month)
+                ->whereYear('created_at', $currentMonth->year)
+                ->count();
+
+            $previousTransactions = Order::whereMonth('created_at', $previousMonth->month)
+                ->whereYear('created_at', $previousMonth->year)
+                ->count();
+
+            // Get transactions chart data
+            $transactionsChartData = [];
+            for ($i = 9; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $dayTransactions = Order::whereDate('created_at', $date->toDateString())->count();
+                $transactionsChartData[] = $dayTransactions;
+            }
+
+            // Calculate products
+            $currentProducts = Obat::where('is_available', true)->count();
+            $previousProducts = DB::table('obats')
+                ->where('created_at', '<', $currentMonth)
+                ->where('is_available', true)
+                ->count();
+
+            // Create products chart data (could be inventory levels over time)
+            $productsChartData = [];
+            for ($i = 9; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                // This is just an example - you might want to track inventory differently
+                $products = Obat::where('created_at', '<=', $date)
+                    ->where('is_available', true)
+                    ->count();
+
+                $productsChartData[] = $products;
+            }
 
             $financialData = [
                 'revenue' => [
-                    'current' => 4562,
-                    'previous' => 2500,
-                    'chartData' => [0, 2200, 2900, 9800, 3000, 3500, 1000, 7200, 4500, 4562]
+                    'current' => $currentRevenue,
+                    'previous' => $previousRevenue ?: 1, // Avoid division by zero
+                    'chartData' => $revenueChartData
                 ],
                 'visitors' => [
-                    'current' => 2562,
-                    'previous' => 1800,
-                    'chartData' => [1500, 0, 2900, 900, 3000, 3500, 5000, 2200, 2500, 4562]
+                    'current' => $currentVisitors,
+                    'previous' => $previousVisitors ?: 1,
+                    'chartData' => $visitorsChartData
                 ],
                 'transactions' => [
-                    'current' => 2262,
-                    'previous' => 2300,
-                    'chartData' => [2500, 2450, 2400, 2350, 2300, 2280, 2270, 2265, 2263, 2262]
+                    'current' => $currentTransactions,
+                    'previous' => $previousTransactions ?: 1,
+                    'chartData' => $transactionsChartData
                 ],
                 'products' => [
-                    'current' => 2100,
-                    'previous' => 1500,
-                    'chartData' => [1000, 1200, 1300, 1400, 1600, 1800, 1900, 2000, 2050, 2100]
+                    'current' => $currentProducts,
+                    'previous' => $previousProducts ?: 1,
+                    'chartData' => $productsChartData
                 ],
             ];
 
-            return view('pages.admin.index',  compact('salesData', 'salesFunnel', 'categorySales', 'financialData'))
+            return view('pages.admin.index', compact('salesData', 'salesFunnel', 'categorySales', 'financialData'))
                 ->with(['title' => 'Dashboard']);
         }
     }

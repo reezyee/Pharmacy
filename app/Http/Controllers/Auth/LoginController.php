@@ -60,18 +60,24 @@ class LoginController extends Controller
             $roleName = $user->role->name ?? 'Pelanggan'; // Default ke Pelanggan jika role tidak ditemukan
 
             if ($roleName === 'Pelanggan') {
-                return redirect()->intended('/user')->with('success', 'Login Berhasil');
+                return redirect('/user')->with('success', 'Login Berhasil');
             }
 
-            return redirect()->intended('/admin')->with('success', 'Login Berhasil');
+            return redirect('/admin')->with('success', 'Login Berhasil');
         }
 
         return back()->withErrors(['password' => 'Sandi yang anda masukan salah'])->withInput();
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+
+        // Hapus sesi
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Redirect ke halaman utama TANPA logout dari Google
         return redirect('/')->with('success', 'Logout berhasil');
     }
 }

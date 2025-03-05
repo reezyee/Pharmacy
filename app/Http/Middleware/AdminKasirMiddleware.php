@@ -4,29 +4,36 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class AdminKasirMiddleware
 {
     /**
      * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        $user = auth()->user();
-
-        if (!$user) {
-            abort(403, 'Anda harus login.');
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+            return redirect()->route('home')->with('error', 'Akses ditolak.');
         }
 
-        // Ambil nama role berdasarkan role_id
-        $role = $user->role ? strtolower($user->role->name) : null;
+        $userRole = Auth::user()->role->name;
 
-        if (!in_array($role, ['admin', 'kasir'])) {
-            abort(403, 'Akses ditolak.');
+        if ($userRole === 'Admin' || $userRole === 'Kasir') {
+            return $next($request);
         }
 
-        return $next($request);
+        if ($request->expectsJson()) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        return redirect()->route('home')->with('error', 'Akses ditolak.');
     }
 }

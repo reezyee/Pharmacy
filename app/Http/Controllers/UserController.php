@@ -19,7 +19,7 @@ class UserController extends Controller
 
         $roles = Role::where('name', '!=', 'Pelanggan')->get();
 
-        return view('pages.admin.akun', compact('users', 'roles'))->with(['title' => 'User Management']);
+        return view('pages.admin.akun', compact('users', 'roles'))->with(['title' => 'Users']);
     }
 
     public function store(Request $request)
@@ -46,7 +46,7 @@ class UserController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.akun')->with('success', 'User berhasil ditambahkan');
+        return redirect()->route('admin.akun.store')->with('success', 'User berhasil ditambahkan');
     }
 
     public function update(Request $request, User $user)
@@ -74,7 +74,7 @@ class UserController extends Controller
 
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => 'User berhasil diperbarui', 'user' => $user])
-            : redirect()->route('admin.akun')->with('success', 'User berhasil diperbarui');
+            : redirect()->route('admin.akun.index')->with('success', 'User berhasil diperbarui');
     }
 
     public function destroy(Request $request, User $user)
@@ -100,7 +100,7 @@ class UserController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.akun')->with('success', 'User berhasil dihapus');
+        return redirect()->route('admin.akun.destroy')->with('success', 'User berhasil dihapus');
     }
 
 

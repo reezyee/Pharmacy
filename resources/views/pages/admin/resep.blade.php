@@ -3,14 +3,6 @@
 @section('content')
     <!-- pages/admin/resep.blade.php -->
     <div class="container mx-auto px-4 py-8 max-w-5xl">
-        <!-- Header -->
-        <h2 class="text-3xl font-light text-gray-800 mb-8 flex items-center">
-            <svg class="w-7 h-7 text-purple-500 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16l4-4 4 4M12 12v8"></path>
-            </svg>
-            Manajemen Resep Obat
-        </h2>
-
         <!-- Success Message -->
         @if (session('success'))
             <div
@@ -24,22 +16,22 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 gap-8">
+        <div class="grid grid-cols-1 gap-8 w-full">
             <!-- Add Recipe Form -->
             <div
                 class="bg-white bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md border border-gray-100 p-8 mb-8 transition-all duration-300 transform hover:shadow-lg">
-                <h3 class="text-xl font-normal text-gray-800 mb-6 border-b pb-3" id="form-title">Tambah Resep Baru</h3>
+                <h3 class="text-xl font-normal text-gray-800 mb-6 border-b pb-3" id="form-title">Add New Recipe</h3>
                 <form id="resepForm" action="{{ route('admin.resep.store') }}" method="POST">
                     @csrf
                     <div id="method-update"></div>
                     <div class="space-y-6">
                         <!-- Patient Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pasien</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient</label>
                             <div class="relative">
                                 <select name="pasien" id="pasien"
                                     class="w-full px-4 py-3 rounded-lg border-0 bg-gray-50 focus:ring-2 focus:ring-purple-500 transition-all appearance-none">
-                                    <option value="">Pilih Pasien</option>
+                                    <option value="">Select Patient</option>
                                     @foreach ($pasiens as $pasien)
                                         <option value="{{ $pasien->id }}">{{ $pasien->name }}</option>
                                     @endforeach
@@ -56,13 +48,13 @@
 
                         <!-- Medicine Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Obat</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Medicines</label>
                             <div id="obat-container" class="space-y-3" data-options='@json($obats)'>
                                 <div class="flex items-center space-x-3">
                                     <div class="relative flex-1">
                                         <select name="obats[0][id]"
                                             class="w-full px-4 py-3 rounded-lg border-0 bg-gray-50 focus:ring-2 focus:ring-purple-500 transition-all appearance-none">
-                                            <option value="">Pilih Obat</option>
+                                            <option value="">Select Medicine</option>
                                             @foreach ($obats as $obat)
                                                 <option value="{{ $obat->id }}">{{ $obat->nama }} -
                                                     {{ $obat->kekuatan_obat }}</option>
@@ -93,7 +85,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Tambah Obat
+                                Add Medicine
                             </button>
                         </div>
 
@@ -105,12 +97,12 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7"></path>
                                     </svg>
-                                    Simpan Resep
+                                    Save Recipe
                                 </div>
                             </button>
                             <button type="button" id="cancelEdit"
                                 class="hidden px-6 py-3 rounded-lg bg-gray-500 text-white font-medium hover:bg-gray-600 transition-all shadow-sm hover:shadow-md">
-                                Batal
+                                Cancel
                             </button>
                         </div>
                     </div>
@@ -120,7 +112,7 @@
             <!-- Recipe List -->
             <div
                 class="bg-white bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md border border-gray-100 p-8 transition-all duration-300 transform hover:shadow-lg">
-                <h3 class="text-xl font-normal text-gray-800 mb-6 border-b pb-3">Daftar Resep</h3>
+                <h3 class="text-xl font-normal text-gray-800 mb-6 border-b pb-3">List of Recipes</h3>
 
                 <!-- Filters -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -131,13 +123,13 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                        <input type="text" id="search" placeholder="Cari pasien..."
+                        <input type="text" id="search" placeholder="Search Patient..."
                             class="pl-10 w-full px-4 py-3 rounded-lg border-0 bg-gray-50 focus:ring-2 focus:ring-purple-500 transition-all">
                     </div>
                     <div class="relative">
                         <select id="filter-dokter"
                             class="w-full px-4 py-3 rounded-lg border-0 bg-gray-50 focus:ring-2 focus:ring-purple-500 transition-all appearance-none">
-                            <option value="">Semua Dokter</option>
+                            <option value="">All Doctors</option>
                             @foreach ($dokters as $dokter)
                                 <option value="{{ $dokter->name }}">{{ $dokter->name }}</option>
                             @endforeach
@@ -170,7 +162,7 @@
                             <div class="flex justify-between items-start mb-4">
                                 <div>
                                     <h4 class="font-medium text-gray-800 text-lg">
-                                        {{ $resep->pasien->name ?? 'Tidak Ada' }}</h4>
+                                        {{ $resep->pasien->name ?? 'Not Found' }}</h4>
                                     <div class="flex items-center text-sm text-gray-500 mt-1">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -178,7 +170,7 @@
                                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
                                             </path>
                                         </svg>
-                                        <span>{{ $resep->dokter->name ?? 'Tidak Ada' }}</span>
+                                        <span>{{ $resep->dokter->name ?? 'Not Found' }}</span>
                                     </div>
                                     <div class="flex items-center text-sm text-gray-500 mt-1">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
@@ -206,7 +198,7 @@
                                         @method('DELETE')
                                         <button type="submit"
                                             class="h-10 w-10 flex items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-all hover:shadow-sm"
-                                            onclick="return confirm('Yakin ingin menghapus?')">
+                                            onclick="return confirm('Are you sure to delete this recipe?')">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -235,8 +227,7 @@
                                         </li>
                                     @endforeach
                                 @else
-                                    <p class="text-gray-500 p-4 bg-gray-50 rounded-lg text-center">Tidak ada obat dalam
-                                        resep ini.</p>
+                                    <p class="text-gray-500 p-4 bg-gray-50 rounded-lg text-center">There isn't medicine in this recipe.</p>
                                 @endif
                             </ul>
                         </div>
@@ -248,7 +239,7 @@
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                 </path>
                             </svg>
-                            <p class="text-gray-500">Tidak ada resep ditemukan.</p>
+                            <p class="text-gray-500">Recipes Not Found</p>
                         </div>
                     @endforelse
                 </div>
@@ -261,7 +252,7 @@
             <div
                 class="bg-white bg-opacity-90 rounded-xl shadow-lg border border-gray-100 p-8 w-full max-w-2xl m-4 transition-all duration-300 transform">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-normal text-gray-800">Edit Resep</h3>
+                    <h3 class="text-xl font-normal text-gray-800">Edit Recipe</h3>
                     <button id="closeEditModal" class="text-gray-500 hover:text-gray-700 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -275,11 +266,11 @@
                     <div class="space-y-6">
                         <!-- Patient Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pasien</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient</label>
                             <div class="relative">
                                 <select name="pasien" id="edit-pasien"
                                     class="w-full px-4 py-3 rounded-lg border-0 bg-gray-50 focus:ring-2 focus:ring-purple-500 transition-all appearance-none">
-                                    <option value="">Pilih Pasien</option>
+                                    <option value="">Select Patient</option>
                                     @foreach ($pasiens as $pasien)
                                         <option value="{{ $pasien->id }}">{{ $pasien->name }}</option>
                                     @endforeach
@@ -296,7 +287,7 @@
 
                         <!-- Medicine Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Obat</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Medicines</label>
 
                             @php
                                 $obatOptions = $obats->map(
@@ -320,7 +311,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Tambah Obat
+                                Add Medicine
                             </button>
                         </div>
 
@@ -332,12 +323,12 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7"></path>
                                     </svg>
-                                    Simpan Perubahan
+                                    Save
                                 </div>
                             </button>
                             <button type="button" id="closeEditModalBtn"
                                 class="px-6 py-3 rounded-lg bg-gray-500 text-white font-medium hover:bg-gray-600 transition-all shadow-sm hover:shadow-md">
-                                Batal
+                                Cancel
                             </button>
                         </div>
                     </div>
@@ -353,7 +344,7 @@
             let container = document.getElementById('obat-container');
             let obatOptions = JSON.parse(container.dataset.options || '[]');
 
-            let selectOptions = `<option value="">Pilih Obat</option>`;
+            let selectOptions = `<option value="">Select Medicine</option>`;
             obatOptions.forEach(obat => {
                 selectOptions += `<option value="${obat.id}">${obat.nama} - ${obat.kekuatan_obat}</option>`;
             });
@@ -446,7 +437,7 @@
                 <div class="flex items-center space-x-3">
                     <div class="relative flex-1">
                         <select name="obats[${index}][id]" class="w-full px-4 py-3 rounded-lg border-0 bg-gray-50 focus:ring-2 focus:ring-purple-500 transition-all appearance-none">
-                            <option value="">Pilih Obat</option>
+                            <option value="">Select Medicine</option>
                             ${selectOptions}
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -550,7 +541,7 @@
             // Cancel edit button for the main form
             document.getElementById('cancelEdit').addEventListener('click', function() {
                 document.getElementById('resepForm').reset();
-                document.getElementById('form-title').textContent = 'Tambah Resep Baru';
+                document.getElementById('form-title').textContent = 'Add New Recipe';
                 document.getElementById('resepForm').action = "{{ route('admin.resep.store') }}";
                 document.getElementById('method-update').innerHTML = '';
                 this.classList.add('hidden');

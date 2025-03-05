@@ -24,7 +24,13 @@ class Resep extends Model
         return $this->belongsTo(User::class, 'pasien_id');
     }
 
-    public function obatReseps()    
+    public function obats()
+    {
+        return $this->belongsToMany(Obat::class, 'obat_reseps', 'resep_id', 'obat_id')
+            ->withPivot('dosis');
+    }
+
+    public function obatReseps()
     {
         return $this->hasMany(ObatResep::class, 'resep_id');
     }

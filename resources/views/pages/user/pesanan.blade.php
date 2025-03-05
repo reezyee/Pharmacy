@@ -4,14 +4,8 @@
 @section('content')
     <div class="p-6 bg-gradient-to-tr from-blue-50 to-purple-50 min-h-screen">
         <div class="max-w-7xl mx-auto">
-            <!-- Header -->
-            <div class="mb-8 p-6 bg-white/60 backdrop-blur-md rounded-xl shadow-md border-l-4 border-purple-500">
-                <h1 class="text-2xl font-medium text-gray-900">Order Management</h1>
-                <p class="mt-1 text-sm text-gray-600">Manage and track all customer orders</p>
-            </div>
-
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 w-full">
                 @foreach (['pending' => 'amber', 'processing' => 'blue', 'completed' => 'green', 'cancelled' => 'red'] as $status => $color)
                     <div
                         class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
@@ -39,7 +33,7 @@
             </div>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('user.orders.obat') }}" class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form method="GET" action="{{ route('user.orders.index') }}" class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <div class="flex flex-wrap gap-6 items-end">
                     <div class="flex-1 min-w-[200px]">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>

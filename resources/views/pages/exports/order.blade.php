@@ -40,10 +40,16 @@
             font-size: 14px;
             font-weight: bold;
         }
+        
         .nomerOrder {
             font-size: 14px;
             font-weight: bold;
             color: red;
+        }
+        
+        .free-shipping {
+            font-weight: bold;
+            font-style: italic;
         }
     </style>
 </head>
@@ -78,7 +84,15 @@
     <p>Subtotal <span class="right">Rp{{ number_format($order->total_amount, 0, ',', '.') }}</span></p>
 
     @if ($order->payment_method !== 'cop')
-        <p>Ongkir <span class="right">Rp{{ number_format($order->shipping_fee ?? 10000, 0, ',', '.') }}</span></p>
+        <p>Ongkir 
+            <span class="right">
+                @if ($order->total_amount >= 100000)
+                    <span class="free-shipping">Gratis Ongkir</span>
+                @else
+                    Rp{{ number_format($order->shipping_fee ?? 10000, 0, ',', '.') }}
+                @endif
+            </span>
+        </p>
     @endif
 
     @if ($order->payment_method === 'cod')
@@ -87,16 +101,13 @@
 
     <div class="divider"></div>
 
-    <p class="total">Total Bayar <span
-            class="right">Rp{{ number_format(
-                $order->total_amount +
-                    ($order->payment_method !== 'cop' ? $order->shipping_fee ?? 10000 : 0) +
-                    ($order->payment_method === 'cod' ? $order->handling_fee ?? 1000 : 0),
-                0,
-                ',',
-                '.',
-            ) }}</span>
-    </p>
+    @php
+        $shippingCost = ($order->payment_method !== 'cop') ? ($order->total_amount >= 100000 ? 0 : ($order->shipping_fee ?? 10000)) : 0;
+        $handlingFee = ($order->payment_method === 'cod') ? ($order->handling_fee ?? 1000) : 0;
+        $totalAmount = $order->total_amount + $shippingCost + $handlingFee;
+    @endphp
+
+    <p class="total">Total Bayar <span class="right">Rp{{ number_format($totalAmount, 0, ',', '.') }}</span></p>
 
     <div class="divider"></div>
 
@@ -117,8 +128,7 @@
         <p>Bank: BCA</p>
         <p>No. Rek: 1234567890</p>
         <p>Atas Nama: PT. Apotek Amanah</p>
-        <p class="bold">Total:
-            Rp{{ number_format($order->total_amount + ($order->shipping_fee ?? 10000), 0, ',', '.') }}</p>
+        <p class="bold">Total: Rp{{ number_format($totalAmount, 0, ',', '.') }}</p>
         <p class="bold">* Gunakan nomor order ({{ $order->order_number }}) sebagai berita transfer</p>
     @endif
 
@@ -132,6 +142,11 @@
         <p class="bold">Silakan ambil pesanan di:</p>
         <p>Apotek Amanah, Jalan Ibu Apipah No. 06</p>
         <p class="bold">Bawa nomor order Anda: <span class="nomerOrder"> {{ $order->order_number }} </span></p>
+    @endif
+
+    @if ($order->total_amount >= 100000 && $order->payment_method !== 'cop')
+        <div class="divider"></div>
+        <p class="center bold">* FREE SHIPPING untuk pembelian di atas Rp100.000 *</p>
     @endif
 
     <div class="divider"></div>

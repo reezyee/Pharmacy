@@ -6,6 +6,7 @@ use App\Models\OrderItem;
 use App\Models\Obat;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class LaporanController extends Controller
 {
@@ -55,6 +56,17 @@ class LaporanController extends Controller
             ->groupBy('hari')
             ->get();
 
+        $bulanLalu = Carbon::now()->subMonth()->month;
+        $tahunLalu = Carbon::now()->year;
+
+        // Ambil data penjualan bulan lalu
+        $penjualanBulanLalu = OrderItem::whereHas('order', function ($query) use ($bulanLalu, $tahunLalu) {
+            $query->whereYear('created_at', $tahunLalu)->whereMonth('created_at', $bulanLalu);
+        })->get();
+
+        // Ambil data stok bulan lalu
+        $obatBulanLalu = Obat::all();
+
         return view('pages.admin.laporan', compact(
             'penjualan',
             'weeklySales',
@@ -63,7 +75,11 @@ class LaporanController extends Controller
             'monthlySales',
             'dailySales',
             'bulan',
-            'tahun'
-        ))->with(['title' => 'Laporan']);
+            'tahun',
+            'bulanLalu',
+            'tahunLalu',
+            'penjualanBulanLalu',
+            'obatBulanLalu'
+        ))->with(['title' => 'Reports']);
     }
 }

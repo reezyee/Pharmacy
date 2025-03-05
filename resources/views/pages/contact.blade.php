@@ -6,8 +6,8 @@
             <!-- Layout 1: Pharmacy Information -->
             <div class="w-full lg:w-1/2">
                 <div class="bg-cyan-400 p-6 rounded-t-lg shadow-lg text-white">
-                    <h1 class="text-2xl font-bold">Tentang Apotek Kami</h1>
-                    <p class="mt-1">Informasi lengkap mengenai apotek kami.</p>
+                    <h1 class="text-2xl font-bold">About Our Pharmacy</h1>
+                    <p class="mt-1">Complete information about our pharmacy.</p>
                 </div>
 
                 @if ($pharmacy)
@@ -22,19 +22,19 @@
                                         $hiddenLength = max(strlen($izin) - $visible, 0); // Hindari nilai negatif
                                     @endphp
 
-                                    <p><span class="font-medium">Nomor Izin Apotek:</span>
+                                    <p><span class="font-medium">Pharmacy License Number:</span>
                                         {{ substr($izin, 0, $visible) . str_repeat('x', $hiddenLength) }}</p>
-                                    <p><span class="font-medium">Apoteker Penanggung Jawab:</span>
+                                    <p><span class="font-medium">Responsible Pharmacist:</span>
                                         {{ $pharmacy->nama_apoteker }}</p>
                                     <p><span class="font-medium">SIPA:</span>
                                         {{ substr($pharmacy->sipa, 0, 12) . str_repeat('x', strlen($pharmacy->sipa) - 12) }}
                                     </p>
-                                    <p><span class="font-medium">Jadwal Praktik:</span> {{ $pharmacy->jadwal_praktik }}</p>
+                                    <p><span class="font-medium">Practice Schedule:</span> {{ $pharmacy->jadwal_praktik }}</p>
                                 </div>
                             </div>
 
                             <div class="border-t pt-4">
-                                <h3 class="text-lg font-semibold text-cyan-600">Informasi Kontak</h3>
+                                <h3 class="text-lg font-semibold text-cyan-600">Contact Information</h3>
                                 <ul class="mt-3 space-y-2 text-gray-700">
                                     <li class="flex items-start">
                                         <span class="mr-2">📍</span>
@@ -51,7 +51,7 @@
                                     </li>
                                     <li class="flex items-start">
                                         <span class="mr-2">🕒</span>
-                                        <span>Senin - Sabtu, 08:00 - 21:00</span>
+                                        <span>{{ $pharmacy->jadwal_praktik }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -59,7 +59,7 @@
 
                         <!-- Peta Lokasi -->
                         <div class="mt-6 border-t pt-4">
-                            <h3 class="text-lg font-semibold text-cyan-600 mb-3">Lokasi Apotek</h3>
+                            <h3 class="text-lg font-semibold text-cyan-600 mb-3">Pharmacy Location</h3>
                             @if ($pharmacy->latitude && $pharmacy->longitude)
                                 <div class="rounded-lg overflow-hidden border border-gray-200">
                                     <iframe class="w-full h-64 rounded-lg"
@@ -68,13 +68,13 @@
                                     </iframe>
                                 </div>
                             @else
-                                <p class="text-red-500">Peta lokasi tidak tersedia.</p>
+                                <p class="text-red-500">Location not available.</p>
                             @endif
                         </div>
                     </div>
                 @else
                     <div class="bg-white p-6 rounded-b-lg shadow-md">
-                        <p class="text-gray-600">Informasi apotek tidak tersedia.</p>
+                        <p class="text-gray-600">Pharmacy Information is not available.</p>
                     </div>
                 @endif
             </div>
@@ -82,13 +82,13 @@
             <!-- Layout 2: Contact Form -->
             <div class="w-full lg:w-1/2">
                 <div class="bg-lime-400 p-6 rounded-t-lg shadow-lg text-white">
-                    <h1 class="text-2xl font-bold">Hubungi Kami</h1>
-                    <p class="mt-1">Kami siap membantu Anda dengan layanan terbaik.</p>
+                    <h1 class="text-2xl font-bold">Contact Us</h1>
+                    <p class="mt-1">We are ready to help you with the best service.</p>
                 </div>
 
                 <div class="bg-white p-6 rounded-b-lg shadow-md">
-                    <h2 class="text-xl font-bold text-lime-600">Kirim Pesan</h2>
-                    <p class="text-gray-600 mt-2">Isi formulir di bawah untuk menghubungi kami.</p>
+                    <h2 class="text-xl font-bold text-lime-600">Send Your Ideas</h2>
+                    <p class="text-gray-600 mt-2">Fill out the form below to contact us.</p>
 
                     <form action="{{ route('contact.send') }}" method="POST" class="mt-6">
                         @csrf
@@ -113,10 +113,10 @@
 
                         {{-- Input Nama --}}
                         <div class="mb-5">
-                            <label class="block text-gray-700 font-medium mb-1">Nama</label>
+                            <label class="block text-gray-700 font-medium mb-1">Name</label>
                             <input type="text" name="nama"
                                 class="w-full px-4 py-2 border rounded-md focus:ring-lime-400 focus:border-lime-400 transition"
-                                value="{{ old('nama') }}" placeholder="Masukkan nama anda">
+                                value="{{ old('nama') }}" placeholder="Enter Your Name">
                         </div>
 
                         {{-- Input Email --}}
@@ -124,51 +124,47 @@
                             <label class="block text-gray-700 font-medium mb-1">Email</label>
                             <input type="email" name="email"
                                 class="w-full px-4 py-2 border rounded-md focus:ring-lime-400 focus:border-lime-400 transition"
-                                value="{{ old('email') }}" placeholder="Masukkan email anda">
+                                value="{{ old('email') }}" placeholder="Enter Your Email">
                         </div>
 
                         {{-- Input Subjek --}}
                         <div class="mb-5">
-                            <label class="block text-gray-700 font-medium mb-1">Subjek</label>
+                            <label class="block text-gray-700 font-medium mb-1">Subject</label>
                             <input type="text" name="subjek"
                                 class="w-full px-4 py-2 border rounded-md focus:ring-lime-400 focus:border-lime-400 transition"
-                                value="{{ old('subjek') }}" placeholder="Subjek pesan">
+                                value="{{ old('subjek') }}" placeholder="Message Subject">
                         </div>
 
                         {{-- Input Pesan --}}
                         <div class="mb-6">
-                            <label class="block text-gray-700 font-medium mb-1">Pesan</label>
+                            <label class="block text-gray-700 font-medium mb-1">Message</label>
                             <textarea name="pesan" rows="5"
                                 class="w-full px-4 py-2 border rounded-md focus:ring-lime-400 focus:border-lime-400 transition"
-                                placeholder="Tulis pesan anda disini">{{ old('pesan') }}</textarea>
+                                placeholder="Enter your ideas here.">{{ old('pesan') }}</textarea>
                         </div>
 
                         <button
                             class="bg-lime-400 text-white px-6 py-3 rounded-lg font-medium hover:bg-lime-500 transition shadow-md w-full sm:w-auto">
-                            Kirim Pesan
+                            Send
                         </button>
                     </form>
                 </div>
 
                 <!-- Additional Info -->
                 <div class="bg-white p-6 mt-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-lime-600 mb-3">Layanan Kami</h3>
+                    <h3 class="text-lg font-semibold text-lime-600 mb-3">Our Services</h3>
                     <ul class="space-y-2 text-gray-700">
                         <li class="flex items-start">
                             <span class="text-lime-500 mr-2">✓</span>
-                            <span>Konsultasi dengan apoteker</span>
+                            <span>Consultation with our professional Doctor or Pharmacist</span>
                         </li>
                         <li class="flex items-start">
                             <span class="text-lime-500 mr-2">✓</span>
-                            <span>Pengiriman obat ke rumah</span>
+                            <span>Get your medications delivered straight to your doorstep.</span>
                         </li>
                         <li class="flex items-start">
                             <span class="text-lime-500 mr-2">✓</span>
-                            <span>Pengadaan obat resep</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-lime-500 mr-2">✓</span>
-                            <span>Layanan kesehatan dan pemeriksaan</span>
+                            <span>Upload your prescription and get it verified quickly.</span>
                         </li>
                     </ul>
                 </div>

@@ -7,9 +7,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
+    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.ico') }}">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="{{ asset('js/cart.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <title>{{ $title }}</title>
 </head>
@@ -26,10 +27,16 @@
     </div>
     @stack('scripts')
     <script>
-        window.Echo.private('App.Models.User.' + {{ auth()->id() }})
-            .notification((notification) => {
-                alert(notification.message);
-            });
-    </script>    
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof window.Echo !== 'undefined') {
+                window.Echo.private('App.Models.User.' + @json(auth()->id()))
+                    .notification((notification) => {
+                        alert(notification.message);
+                    });
+            } else {
+                console.error("Laravel Echo tidak terdeteksi. Pastikan sudah dikonfigurasi dengan benar.");
+            }
+        });
+    </script>          
 </body>
 </html>

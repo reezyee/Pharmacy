@@ -1,9 +1,9 @@
 @extends('layouts.user')
 
 @section('content')
-    <div class="max-w-lg mx-auto p-4 bg-white shadow-md rounded-lg">
+    <div class="max-w-lg mx-auto mt-20 lg:mt-0 p-4 bg-white shadow-md rounded-lg">
         <div class="flex items-center border-b pb-2">
-            <a href="{{ route('chat.index') }}" class="text-blue-500 mr-3">
+            <a href="{{ route('user.chat.index') }}" class="text-blue-500 mr-3">
                 &larr; Back
             </a>
             @php
@@ -136,7 +136,7 @@
             function sendMessage(message) {
                 if (message.trim() === "") return;
 
-                fetch("{{ route('chat.send') }}", {
+                fetch("{{ route('user.chat.send') }}", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",

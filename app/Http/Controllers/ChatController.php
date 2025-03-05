@@ -81,14 +81,12 @@ class ChatController extends Controller
             ->get();
 
         // Jika pelanggan, tampilkan view user
-        if ($authUser->role === 'Pelanggan') {
-            return view('pages.user.chat.show', compact('user', 'messages'))->with(['title' => 'Live Chat']);
+        if ($authUser->role->name === 'Pelanggan') {
+            return view('pages.user.chat.show', compact('user', 'messages'))->with(['title' => 'Chat']);
         } else {
             return view('pages.admin.chat.show', compact('user', 'messages'))->with(['title' => 'Chat']);
-        }
+        }        
     }
-
-
 
     public function sendMessage(Request $request)
     {

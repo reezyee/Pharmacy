@@ -52,9 +52,9 @@ class OrderController extends Controller
 
         // Sesuaikan view berdasarkan role
         if ($user->role->name === 'Pelanggan') {
-            return view('pages.user.pesanan', compact('orders'))->with(['title' => 'Pesanan Saya']);
+            return view('pages.user.pesanan', compact('orders'))->with(['title' => 'My Orders']);
         } else {
-            return view('pages.admin.pesanan', compact('orders'))->with(['title' => 'Order Non-Resep']);
+            return view('pages.admin.pesanan', compact('orders'))->with(['title' => 'Orders']);
         }
     }
 
@@ -77,12 +77,16 @@ class OrderController extends Controller
                         ->where('id', $item->obat_id)
                         ->increment('banyak', $item->quantity);
                 }
+                Log::info("📦 Stok berhasil dikembalikan untuk pesanan yang dibatalkan.");
             }
 
             // Update status pesanan
             $order->update(['status' => $newStatus]);
 
-            // Jika pesanan selesai, ubah status pembayaran
+            // Debugging setelah update
+            $order->refresh(); // Ambil ulang data dari database
+
+            // Jika pesanan selesai, update status pembayaran
             if ($newStatus === 'completed') {
                 $order->update(['payment_status' => 'paid']);
             }
@@ -92,11 +96,10 @@ class OrderController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Status pesanan berhasil diperbarui!');
+            return redirect()->route('admin.orders.index')->with('success', 'Status pesanan berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal memperbarui status pesanan: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui status pesanan. Coba lagi nanti.');
+            return redirect()->route('admin.orders.index')->with('error', 'Status pesanan gagal diperbarui!');
         }
     }
 
@@ -129,5 +132,24 @@ class OrderController extends Controller
             Log::error("Gagal membatalkan pesanan: " . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan, coba lagi nanti.');
         }
+    }
+
+    public function uploadPaymentProof(Request $request, Order $order)
+    {
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($request->hasFile('payment_proof')) {
+            $file = $request->file('payment_proof');
+            $filename = 'payment_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/payments', $filename);
+
+            $order->update(['payment_proof' => $filename, 'payment_status' => 'pending']);
+
+            return back()->with('success', 'Bukti pembayaran berhasil diunggah!');
+        }
+
+        return back()->with('error', 'Gagal mengunggah bukti pembayaran.');
     }
 }

@@ -13,7 +13,7 @@ class UserObatResepController extends Controller
     {
         // Get all recipes for the authenticated user
         $reseps = Resep::where('pasien_id', Auth::id())
-            ->with(['dokter', 'pasien'])
+            ->with(['dokter', 'pasien', 'obatReseps.obat']) // Tambahkan relasi obat_reseps
             ->latest()
             ->get();
 
@@ -31,39 +31,54 @@ class UserObatResepController extends Controller
         $resepsMenunggu = $reseps->where('status', 'Menunggu Verifikasi');
         $resepsTerverifikasi = $reseps->where('status', 'Terverifikasi');
         $resepsDitolak = $reseps->where('status', 'Ditolak');
+        $resepDitebus = $reseps->where('status', 'Ditebus');
 
         // Calculate statistics
         $totalResep = $reseps->count();
         $menunggu = $resepsMenunggu->count();
         $terverifikasi = $resepsTerverifikasi->count();
         $ditolak = $resepsDitolak->count();
+        $ditebus = $resepDitebus->count();
 
         return view('pages.user.resep.index', compact(
             'resepsMenunggu',
             'resepsTerverifikasi',
             'resepsDitolak',
             'resepsDariDokter',
+            'resepDitebus',
             'totalResep',
             'menunggu',
             'terverifikasi',
             'ditolak',
+            'ditebus',
             'obats'
-        ))->with(['title' => 'Verifikasi Resep']);
+        ))->with(['title' => 'Recipes']);
     }
+
     public function fetch(Request $request)
     {
         $status = $request->query('status');
+
         $query = Resep::where('pasien_id', Auth::id())
-            ->with(['dokter', 'pasien'])
+            ->with([
+                'dokter:id,name',
+                'pasien:id,name',
+                'obatReseps.obat:id,nama'
+            ])
+            ->select(['id', 'pasien_id', 'dokter_id', 'status', 'foto_resep', 'obats', 'created_at'])
             ->latest();
 
         if ($status === 'dokter') {
-            $query->whereNotNull('dokter_id')->where('pasien_id', Auth::id());
+            // Pastikan resep dokter tetap muncul
+            $query->whereNotNull('dokter_id');
         } elseif ($status === 'pending') {
-            $query->whereNull('status')
-                ->orWhere('status', '')
-                ->orWhere('status', 'pending')
-                ->orWhere('status', 'Menunggu Verifikasi');
+            // Sesuaikan dengan kondisi yang lebih fleksibel
+            $query->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhere('status', '')
+                    ->orWhere('status', 'pending')
+                    ->orWhere('status', 'Menunggu Verifikasi');
+            });
         } elseif ($status !== null) {
             $query->where('status', $status);
         }
@@ -74,20 +89,41 @@ class UserObatResepController extends Controller
             'data' => $reseps->map(function ($resep) {
                 return [
                     'id' => $resep->id,
-                    'pasien_nama' => $resep->pasien->name ?? '-',
-                    'dokter' => $resep->dokter->name ?? 'Resep Upload',
+                    'pasien_nama' => optional($resep->pasien)->name ?? '-',
+                    'dokter' => optional($resep->dokter)->name ?? 'Resep Upload',
                     'sumber' => $resep->dokter_id ? 'dokter' : 'upload',
-                    'obats' => json_decode($resep->obats ?? '[]', true), // Pastikan didecode dengan fallback ke array kosong
                     'status' => $resep->status,
-                    'foto_resep' => $resep->foto_resep,
+                    'foto_resep' => is_array($resep->foto_resep) ? $resep->foto_resep : json_decode($resep->foto_resep, true) ?? [],
                     'created_at' => $resep->created_at->format('Y-m-d H:i:s'),
+                    'obats' => $resep->dokter_id
+                        ? collect(json_decode($resep->obats, true) ?? [])->map(function ($obat) {
+                            return [
+                                'id' => $obat['id'] ?? null,
+                                'nama' => $obat['nama'] ?? 'Obat Tidak Ditemukan',
+                                'dosis' => $obat['dosis'] ?? '-',
+                            ];
+                        })
+                        : $resep->obatReseps->map(function ($obatResep) {
+                            return [
+                                'id' => optional($obatResep->obat)->id,
+                                'nama' => optional($obatResep->obat)->nama ?? 'Obat Tidak Ditemukan',
+                                'dosis' => $obatResep->dosis ?? '-',
+                            ];
+                        }),
                 ];
             }),
-            'links' => $reseps->links()->elements,
+            'links' => [
+                'first' => $reseps->url(1),
+                'last' => $reseps->url($reseps->lastPage()),
+                'prev' => $reseps->previousPageUrl(),
+                'next' => $reseps->nextPageUrl(),
+            ],
             'current_page' => $reseps->currentPage(),
             'last_page' => $reseps->lastPage(),
         ]);
     }
+
+
     public function verifikasi($id, Request $request)
     {
         $resep = Resep::find($id);

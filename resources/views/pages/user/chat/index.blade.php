@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
 @section('content')
-    <div class="max-w-lg mx-auto p-4 bg-white shadow-md rounded-lg">
+    <div class="max-w-lg mx-auto p-4 mt-20 lg:mt-0 bg-white shadow-md rounded-lg">
         <h2 class="text-xl font-bold mb-4">Live Chat</h2>
 
         <!-- Daftar Dokter & Apoteker -->
@@ -28,7 +28,7 @@
                     $colors = $roleColors[$role] ?? $roleColors['Dokter'];
                 @endphp
 
-                <a href="{{ route('chat.show', $user->id) }}"
+                <a href="{{ route('user.chat.show', $user->id) }}"
                     class="flex items-center p-3 rounded-lg shadow-sm border hover:bg-gray-100 transition">
                     <div class="w-10 h-10 rounded-full overflow-hidden">
                         <img src="{{ $user->avatar

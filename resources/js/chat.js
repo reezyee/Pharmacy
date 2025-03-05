@@ -12,19 +12,22 @@ document.addEventListener("DOMContentLoaded", function () {
         encrypted: true,
     });
 
-    let channel = pusher.subscribe("chatify");
-    channel.bind("message-sent", function (data) {
-        displayMessage(data.message, data.sender);
+    let channel = pusher.subscribe("chat-channel");
+    channel.bind("new-message", function (data) {
+        displayMessage(data.message, data.from_id);
     });
 
     sendButton.addEventListener("click", function () {
         sendMessage(messageInput.value);
     });
 
-    function sendMessage(message) {
+    function sendMessage(message, receiverId, userRole) {
         if (message.trim() === "") return;
 
-        fetch("/chat/send", {
+        let chatEndpoint =
+            userRole === "pelanggan" ? "/user/chat/send" : "/admin/chat/send";
+
+        fetch(chatEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -34,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             body: JSON.stringify({
                 message,
+                receiver_id: receiverId,
             }),
         });
 
@@ -49,9 +53,16 @@ document.addEventListener("DOMContentLoaded", function () {
             messageDiv.classList.add("bg-blue-500", "text-white", "ml-auto");
         } else {
             messageDiv.classList.add("bg-gray-200");
+            let senderName = document.createElement("div");
+            senderName.textContent = sender;
+            senderName.classList.add("text-sm", "font-bold", "mb-1");
+            messageDiv.appendChild(senderName);
         }
 
-        messageDiv.textContent = message;
+        let messageText = document.createElement("div");
+        messageText.textContent = message;
+        messageDiv.appendChild(messageText);
+
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }

@@ -126,7 +126,7 @@
                                 <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-lime-400 rounded-full 
                                     flex items-center justify-center mb-2 shadow-inner">
                                     <span
-                                        class="text-lg font-bold text-white">{{ substr($kategori->nama, 0, 1) }}</span>
+                                        class="text-lg font-bold text-white">{{ substr($kategori->nama, 0, 2) }}</span>
                                 </div>
                                 <span class="text-sm font-medium text-gray-200">{{ $kategori->nama }}</span>
                                 <div

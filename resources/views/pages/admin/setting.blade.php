@@ -2,10 +2,6 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <h1
-            class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 mb-8 text-center">
-            Admin Control Panel</h1>
-
         <!-- Session Status Message -->
         @if (session('success'))
             <div
@@ -21,7 +17,7 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <!-- Sticky Sidebar Navigation -->
             <div class="col-span-1">
                 <div class="sticky top-4" id="stickyNav">
@@ -132,13 +128,13 @@
 
                                     <div class="ml-4">
                                         <p class="text-white font-medium">{{ Auth::user()->name }}</p>
-                                        @if (Auth::user()->role_id === 'Admin')
+                                        @if (Auth::user()->role->name === 'Admin')
                                             <p class="text-blue-300 text-sm">Administrator</p>
-                                        @elseif (Auth::user()->role_id === 'Apoteker')
+                                        @elseif (Auth::user()->role->name === 'Apoteker')
                                             <p class="text-blue-300 text-sm">Pharmacist</p>
-                                        @elseif (Auth::user()->role_id === 'Kasir')
+                                        @elseif (Auth::user()->role->name === 'Kasir')
                                             <p class="text-blue-300 text-sm">Cashier</p>
-                                        @elseif (Auth::user()->role_id === 'Dokter')
+                                        @elseif (Auth::user()->role->name === 'Dokter')
                                             <p class="text-blue-300 text-sm">Doctor</p>
                                         @else
                                             <p class="text-blue-300 text-sm">Customer</p>
@@ -160,7 +156,7 @@
                         <h2 class="text-xl font-semibold text-white">Personal Profile</h2>
                     </div>
 
-                    <form action="{{ route('settings.updateProfile') }}" method="POST" enctype="multipart/form-data"
+                    <form action="{{ route('admin.settings.updateProfile') }}" method="POST" enctype="multipart/form-data"
                         class="p-6">
                         @csrf
                         <div class="flex flex-col md:flex-row items-center gap-6 mb-6">

@@ -24,6 +24,7 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'shipping_address',
+        'payment_proof',
         'notes'
     ];
 
@@ -33,7 +34,7 @@ class Order extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($order) {
             $order->order_number = 'ORD-' . strtoupper(Str::random(8));
         });
@@ -46,7 +47,7 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+
     /**
      * Relasi ke OrderItem (barang yang dipesan).
      */
@@ -64,8 +65,7 @@ class Order extends Model
     }
 
     public function resep(): BelongsTo
-{
-    return $this->belongsTo(Resep::class, 'resep_id');
-}
-
+    {
+        return $this->belongsTo(Resep::class, 'resep_id');
+    }
 }

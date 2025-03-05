@@ -76,7 +76,8 @@ class CheckoutController extends Controller
 
             // Hitung total
             $totalAmount = $cartItems->sum(fn($item) => $item->obat->harga * $item->quantity);
-            $shippingCost = ($request->payment_method === 'cop') ? 0 : 10000;
+            $gratisOngkirMin = 100000; // Minimal belanja untuk gratis ongkir
+            $shippingCost = ($totalAmount >= $gratisOngkirMin) ? 0 : 10000;            
             $handlingFee = ($request->payment_method === 'cod') ? 1000 : 0;
 
             // Tentukan alamat

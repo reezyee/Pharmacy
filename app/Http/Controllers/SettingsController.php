@@ -17,7 +17,7 @@ class SettingsController extends Controller
 
         // Jika peran adalah Pelanggan, arahkan ke halaman setting pelanggan
         if ($role === 'Pelanggan') {
-            return view('pages.user.setting')->with(['title' => 'Setting']);
+            return view('pages.user.setting')->with(['title' => 'Settings']);
         }
 
         // Jika bukan Pelanggan, arahkan ke halaman setting admin

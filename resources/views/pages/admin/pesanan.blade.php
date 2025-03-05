@@ -4,14 +4,8 @@
 @section('content')
     <div class="p-6 bg-gradient-to-tr from-blue-50 to-purple-50 min-h-screen">
         <div class="max-w-7xl mx-auto">
-            <!-- Header -->
-            <div class="mb-8 p-6 bg-white/60 backdrop-blur-md rounded-xl shadow-md border-l-4 border-purple-500">
-                <h1 class="text-2xl font-medium text-gray-900">Order Management</h1>
-                <p class="mt-1 text-sm text-gray-600">Manage and track all customer orders</p>
-            </div>
-
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 w-full">
                 @foreach (['pending' => 'amber', 'processing' => 'blue', 'completed' => 'green', 'cancelled' => 'red'] as $status => $color)
                     <div
                         class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
@@ -39,7 +33,7 @@
             </div>
 
             <!-- Filters -->
-            <form method="GET" action="{{ route('user.orders.obat') }}" class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form method="GET" action="{{ route('user.orders.index') }}" class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <div class="flex flex-wrap gap-6 items-end">
                     <div class="flex-1 min-w-[200px]">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -221,17 +215,17 @@
                                 <div id="cancelModal"
                                     class="hidden fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 backdrop-blur-sm">
                                     <div class="bg-white rounded-lg p-6 w-96 shadow-xl">
-                                        <h2 class="text-lg font-medium mb-4">Konfirmasi Pembatalan</h2>
-                                        <p class="text-gray-600">Apakah Anda yakin ingin membatalkan pesanan ini?</p>
+                                        <h2 class="text-lg font-medium mb-4">Confirm Cancel Order</h2>
+                                        <p class="text-gray-600">Are you sure you want to cancel this order?</p>
                                         <div class="flex justify-end mt-6 gap-2">
                                             <button onclick="closeModal()"
-                                                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors">Batal</button>
+                                                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors">Cancel</button>
                                             <form id="cancelForm" method="POST">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
-                                                    class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors">Ya,
-                                                    Batalkan</button>
+                                                    class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors">Yes,
+                                                    Cancel</button>
                                             </form>
                                         </div>
                                     </div>
@@ -301,7 +295,7 @@
             async function updateOrderStatus(orderId, status) {
                 try {
                     const response = await fetch(`/admin/pesanan/${orderId}/update-status`, {
-                        method: 'POST',
+                        method: 'PATCH', // Gunakan PATCH atau PUT
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -311,11 +305,18 @@
                         })
                     });
 
+                    const data = await response.json();
+
                     if (response.ok) {
-                        showNotification('Order status updated successfully', 'success');
+                        showNotification(data.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification(data.error || 'Failed Update Status', 'error');
                     }
                 } catch (error) {
-                    showNotification('Failed to update order status', 'error');
+                    showNotification('Something went wrong when updating order status', 'error');
                 }
             }
 

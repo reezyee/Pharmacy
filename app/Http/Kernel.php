@@ -50,10 +50,14 @@ class Kernel extends HttpKernel
         'auth' => \App\Http\Middleware\Authenticate::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-
+        
         // Middleware admin & kasir
+        'admin.apoteker' => \App\Http\Middleware\AdminApotekerMiddleware::class,
+        'admin.dokter.apoteker' => \App\Http\Middleware\AdminDokterApotekerMiddleware::class,
         'admin.kasir' => \App\Http\Middleware\AdminKasirMiddleware::class,  
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
-
+        'dokter.apoteker' => \App\Http\Middleware\DokterApotekerMiddleware::class,
+        'non.pelanggan' => \App\Http\Middleware\NonPelangganMiddleware::class,
+        'pelanggan' => \App\Http\Middleware\PelangganMiddleware::class,
     ];
 }

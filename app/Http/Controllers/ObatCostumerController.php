@@ -56,13 +56,13 @@ class ObatCostumerController extends Controller
 
         $kategoris = Kategori::all();
         return view('pages.shop', compact('obats', 'kategoris'))
-            ->with('title', 'Belanja Obat');
+            ->with('title', 'Catalogue');
     }
 
         public function show($id)
     {
         $obat = Obat::findOrFail($id);
         
-        return view('pages.detail', compact('obat'))->with(['title' => 'Detail Obat']);
+        return view('pages.detail', compact('obat'))->with(['title' => 'Detail']);
     }
 }

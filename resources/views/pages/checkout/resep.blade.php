@@ -8,13 +8,13 @@
                 <h2 class="text-2xl font-semibold mb-4">Order Summary</h2>
 
                 @if ($resep->obatReseps->isEmpty())
-                    <p class="text-gray-500 text-center py-4">Tidak ada obat dalam resep ini.</p>
+                    <p class="text-gray-500 text-center py-4">There isn't a medicine in the recipe</p>
                 @else
                     <div class="space-y-4">
                         @foreach ($resep->obatReseps as $item)
                             <div class="flex items-center space-x-4 py-4 border-b">
                                 <img src="{{ asset('storage/' . optional($item->obat)->foto) }}"
-                                    alt="{{ optional($item->obat)->nama ?? 'Obat Tidak Ditemukan' }}"
+                                    alt="{{ optional($item->obat)->nama ?? 'Medicine is not found' }}"
                                     class="w-20 h-20 object-cover rounded">
                                 <div class="flex w-full justify-between">
                                     <div>
@@ -41,15 +41,35 @@
                         </div>
                         <div class="flex justify-between items-center text-gray-700 mt-2">
                             <span>Shipping Cost:</span>
-                            <span id="shippingCost">Rp10.000</span>
+                            <span id="shippingCost">
+                                @if ($totalAmount >= 100000)
+                                    <span class="line-through text-gray-500">Rp10.000</span>
+                                @else
+                                    Rp10.000
+                                @endif
+                            </span>
                         </div>
+                        @if ($totalAmount >= 100000)
+                            <p class="text-success">🎉 Congrats! You get a free shipping cost.</p>
+                        @else
+                            <p class="text-danger">
+                                Shop Rp{{ number_format(100000 - $totalAmount, 0, ',', '.') }} more to get free shipping
+                                cost.
+                            </p>
+                        @endif
                         <div class="flex justify-between items-center text-gray-700 mt-2">
                             <span>Handling Fee (COD):</span>
                             <span id="handlingFee">Rp0</span>
                         </div>
                         <div class="flex justify-between items-center text-xl font-semibold mt-4 border-t pt-2">
                             <span>Grand Total:</span>
-                            <span id="grandTotal">Rp{{ number_format($totalAmount + 10000) }}</span>
+                            <span id="grandTotal">
+                                @if ($totalAmount >= 100000)
+                                    Rp{{ number_format($totalAmount) }}
+                                @else
+                                    Rp{{ number_format($totalAmount + 10000) }}
+                                @endif
+                            </span>
                         </div>
                     </div>
                 @endif
@@ -159,7 +179,9 @@
             const placeOrderBtn = document.getElementById("placeOrderBtn");
 
             function updateTotals() {
-                let shipping = (codRadio.checked || transferRadio.checked) ? 10000 : 0;
+                let totalAmount = parseInt(document.getElementById('totalAmount').textContent.replace(/[^\d]/g,
+                    '')) || 0;
+                let shipping = totalAmount >= 100000 ? 0 : 10000;
                 let handling = codRadio.checked ? 1000 : 0;
 
                 shippingCost.textContent = `Rp${shipping.toLocaleString('id-ID')}`;
@@ -167,12 +189,17 @@
                 grandTotal.textContent = `Rp${(totalAmount + shipping + handling).toLocaleString('id-ID')}`;
             }
 
+            document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+                radio.addEventListener("change", updateTotals);
+            });
+
+            
             // Payment method change handler
             document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
                 radio.addEventListener("change", function() {
                     addressSection.style.display = copRadio.checked ? "none" : "block";
                     updateTotals();
-
+                    
                     // Reset address validation when switching to COP
                     if (copRadio.checked) {
                         newAddressInput.setCustomValidity('');
@@ -202,7 +229,7 @@
             // Form submission handler
             checkoutForm.addEventListener("submit", async function(e) {
                 e.preventDefault();
-
+                
                 // Basic validation
                 if (!document.querySelector('input[name="payment_method"]:checked')) {
                     alert('Please select a payment method');
@@ -257,7 +284,7 @@
 
             // Initialize totals
             updateTotals();
-
+            
             // Initialize address form visibility
             if (newAddressOption.checked) {
                 newAddressForm.classList.remove('hidden');

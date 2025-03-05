@@ -22,7 +22,7 @@ class ObatController extends Controller
         $kategoris = Kategori::all();
         $jenis_obat = JenisObat::all();
         $bentuk_obat = BentukObat::all();
-        return view('pages.admin.obat', compact('obats', 'kategoris', 'jenis_obat', 'bentuk_obat'))->with('title', 'Manage Obat');
+        return view('pages.admin.obat', compact('obats', 'kategoris', 'jenis_obat', 'bentuk_obat'))->with('title', 'Medicines');
     }
 
     public function create()

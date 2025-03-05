@@ -32,7 +32,6 @@
                             </div>
                         @endforeach
                     </div>
-
                     <div class="mt-6 pt-6 border-t">
                         <div class="flex justify-between items-center text-xl font-semibold">
                             <span>Total Items:</span>
@@ -40,15 +39,35 @@
                         </div>
                         <div class="flex justify-between items-center text-gray-700 mt-2">
                             <span>Shipping Cost:</span>
-                            <span id="shippingCost">Rp10.000</span>
+                            <span id="shippingCost">
+                                @if ($totalAmount >= 100000)
+                                    <span class="line-through text-gray-500">Rp10.000</span>
+                                @else
+                                    Rp10.000
+                                @endif
+                            </span>
                         </div>
+                        @if ($totalAmount >= 100000)
+                            <p class="text-success">🎉 Congrats! You get a free shipping cost.</p>
+                        @else
+                            <p class="text-danger">
+                                Shop Rp{{ number_format(100000 - $totalAmount, 0, ',', '.') }} more to get free shipping
+                                cost.
+                            </p>
+                        @endif
                         <div class="flex justify-between items-center text-gray-700 mt-2">
                             <span>Handling Fee (COD):</span>
                             <span id="handlingFee">Rp0</span>
                         </div>
                         <div class="flex justify-between items-center text-xl font-semibold mt-4 border-t pt-2">
                             <span>Grand Total:</span>
-                            <span id="grandTotal">Rp{{ number_format($totalAmount + 10000) }}</span>
+                            <span id="grandTotal">
+                                @if ($totalAmount >= 100000)
+                                    Rp{{ number_format($totalAmount) }}
+                                @else
+                                    Rp{{ number_format($order->total_amount + ($order->payment_method !== 'cop' ? 10000 : 0) + ($order->payment_method === 'cod' ? 1000 : 0)) }}
+                                @endif
+                            </span>
                         </div>
                     </div>
                 @endif
@@ -169,12 +188,29 @@
             const placeOrderBtn = document.getElementById("placeOrderBtn");
 
             function updateTotals() {
-                let shipping = (codRadio.checked || transferRadio.checked) ? 10000 : 0;
+                let totalAmount = parseInt(document.getElementById('totalAmount').textContent.replace(/[^\d]/g,
+                    '')) || 0;
+                let shipping = (totalAmount >= 100000) ? 0 : ((codRadio.checked || transferRadio.checked) ? 10000 :
+                    0);
                 let handling = codRadio.checked ? 1000 : 0;
 
                 shippingCost.textContent = `Rp${shipping.toLocaleString('id-ID')}`;
                 handlingFee.textContent = `Rp${handling.toLocaleString('id-ID')}`;
                 grandTotal.textContent = `Rp${(totalAmount + shipping + handling).toLocaleString('id-ID')}`;
+
+                // Tambahkan pesan promo gratis ongkir
+                let promoMessage = document.getElementById('promoMessage');
+                if (totalAmount >= 100000) {
+                    promoMessage.innerHTML = `🎉 Congrats! You get a <strong>free shipping cost</strong>.`;
+                    promoMessage.classList.remove('text-danger');
+                    promoMessage.classList.add('text-success');
+                } else {
+                    let remaining = 100000 - totalAmount;
+                    promoMessage.innerHTML =
+                        `Shop Rp${remaining.toLocaleString('id-ID')} more to get free shipping cost.`;
+                    promoMessage.classList.remove('text-success');
+                    promoMessage.classList.add('text-danger');
+                }
             }
 
             // Payment method change handler

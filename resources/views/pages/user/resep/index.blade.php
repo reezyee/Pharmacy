@@ -2,10 +2,6 @@
 
 @section('content')
     <div class="container mx-auto px-4 md:px-6 py-8">
-        <h1 class="mb-8 p-6 bg-white/60 backdrop-b  lur-md rounded-xl shadow-md border-l-4 border-purple-500">
-            <span class="material-icons align-bottom mr-2">assignment</span>Verifikasi Resep
-        </h1>
-
         @if (session('success'))
             <div class="flex items-center p-4 mb-4 rounded-lg bg-green-50 border-l-4 border-green-500 shadow-sm">
                 <span class="material-icons text-green-500 mr-2">check_circle</span>
@@ -21,33 +17,46 @@
         @endif
 
         <!-- Statistik Resep Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-5 text-center transition-shadow hover:shadow-md">
-                <p class="text-gray-600 text-sm mb-1">Total Resep</p>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 w-full">
+            <!-- Total Recipe (1 Kolom di Mobile, Normal di Desktop) -->
+            <div class="bg-white rounded-lg shadow p-5 text-center transition-shadow hover:shadow-md col-span-2 md:col-span-1">
+                <p class="text-gray-600 text-sm mb-1">Total Recipe</p>
                 <p class="text-2xl font-medium text-gray-900">{{ $totalResep }}</p>
             </div>
+        
+            <!-- Wait for Verification -->
             <div class="bg-white rounded-lg shadow p-5 text-center transition-shadow hover:shadow-md">
-                <p class="text-gray-600 text-sm mb-1">Menunggu Verifikasi</p>
+                <p class="text-gray-600 text-sm mb-1">Wait for Verification</p>
                 <p class="text-2xl font-medium text-amber-600">{{ $menunggu }}</p>
                 <div class="w-full h-1 bg-amber-500 mt-2 rounded-full"></div>
             </div>
+        
+            <!-- Verified -->
             <div class="bg-white rounded-lg shadow p-5 text-center transition-shadow hover:shadow-md">
-                <p class="text-gray-600 text-sm mb-1">Terverifikasi</p>
+                <p class="text-gray-600 text-sm mb-1">Verified</p>
                 <p class="text-2xl font-medium text-green-600">{{ $terverifikasi }}</p>
                 <div class="w-full h-1 bg-green-500 mt-2 rounded-full"></div>
             </div>
+        
+            <!-- Rejected -->
             <div class="bg-white rounded-lg shadow p-5 text-center transition-shadow hover:shadow-md">
-                <p class="text-gray-600 text-sm mb-1">Ditolak</p>
+                <p class="text-gray-600 text-sm mb-1">Rejected</p>
                 <p class="text-2xl font-medium text-red-600">{{ $ditolak }}</p>
                 <div class="w-full h-1 bg-red-500 mt-2 rounded-full"></div>
             </div>
-        </div>
-
+        
+            <!-- Redeemed -->
+            <div class="bg-white rounded-lg shadow p-5 text-center transition-shadow hover:shadow-md">
+                <p class="text-gray-600 text-sm mb-1">Redeemed</p>
+                <p class="text-2xl font-medium text-green-600">{{ $ditebus }}</p>
+                <div class="w-full h-1 bg-green-500 mt-2 rounded-full"></div>
+            </div>
+        </div>        
         <!-- Search Input with Material Design -->
         <div class="mb-6 relative">
             <div class="flex items-center bg-white rounded-lg shadow overflow-hidden">
                 <span class="material-icons text-gray-400 ml-3">search</span>
-                <input type="text" id="search" placeholder="Cari resep..."
+                <input type="text" id="search" placeholder="Search recipe..."
                     class="w-full p-3 border-0 focus:ring-0 focus:outline-none">
             </div>
         </div>
@@ -56,19 +65,23 @@
         <div class="flex flex-wrap space-x-0 space-y-2 md:space-x-4 md:space-y-0 mb-6">
             <button onclick="fetchResep('dokter')"
                 class="tab-btn group bg-white text-gray-700 px-4 py-2 rounded-lg shadow transition-all hover:shadow-md flex items-center">
-                <span class="material-icons mr-2 text-sm group-hover:text-blue-600">local_hospital</span>Resep dari Dokter
+                <span class="material-icons mr-2 text-sm group-hover:text-blue-600">local_hospital</span>From Doctor
             </button>
             <button onclick="fetchResep('Menunggu Verifikasi')"
                 class="tab-btn group bg-white text-gray-700 px-4 py-2 rounded-lg shadow transition-all hover:shadow-md flex items-center">
-                <span class="material-icons mr-2 text-sm group-hover:text-amber-600">hourglass_empty</span>Menunggu Verifikasi
+                <span class="material-icons mr-2 text-sm group-hover:text-amber-600">hourglass_empty</span>Wait for Verification
             </button>
             <button onclick="fetchResep('Terverifikasi')"
                 class="tab-btn group bg-white text-gray-700 px-4 py-2 rounded-lg shadow transition-all hover:shadow-md flex items-center">
-                <span class="material-icons mr-2 text-sm group-hover:text-green-500" >check_circle</span>Terverifikasi
+                <span class="material-icons mr-2 text-sm group-hover:text-green-500">check_circle</span>Verified
             </button>
             <button onclick="fetchResep('Ditolak')"
                 class="tab-btn group bg-white text-gray-700 px-4 py-2 rounded-lg shadow transition-all hover:shadow-md flex items-center">
-                <span class="material-icons mr-2 text-sm group-hover:text-red-500">cancel</span>Ditolak
+                <span class="material-icons mr-2 text-sm group-hover:text-red-500">cancel</span>Rejected
+            </button>
+            <button onclick="fetchResep('Ditebus')"
+                class="tab-btn group bg-white text-gray-700 px-4 py-2 rounded-lg shadow transition-all hover:shadow-md flex items-center">
+                <span class="material-icons mr-2 text-sm group-hover:text-green-500">assignment_turned_in</span>Redeemed
             </button>
         </div>
 
@@ -185,19 +198,20 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log("API Response:", data);
                     if (!data || !Array.isArray(data.data) || data.data.length === 0) {
                         container.innerHTML = `
                             <div class="col-span-full text-center py-8">
                                 <span class="material-icons text-4xl text-gray-400">search_off</span>
-                                <p class="text-gray-500 mt-2">Tidak ada resep ditemukan.</p>
+                                <p class="text-gray-500 mt-2">Recipes is not found.</p>
                             </div>`;
                         return;
                     }
 
                     container.innerHTML = "";
 
-                    data.data.filter(resep => status !== 'dokter' || (resep.sumber && resep.sumber.toLowerCase() ===
-                            'dokter'))
+                    data.data.filter(resep => status === 'dokter' ? (resep.sumber && resep.sumber.toLowerCase() ===
+                            'dokter') : true)
                         .forEach(resep => {
                             let fotoResepHtml = (resep.foto_resep || []).map(foto => `
                                 <img class="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-75 transition" 
@@ -206,20 +220,18 @@
                                     alt="Foto Resep">
                             `).join("");
 
-                            let obats = (resep.obats && Object.keys(resep.obats).length > 0) ?
-                                Object.values(resep.obats).map(obat => `
-                                    <div class="flex justify-between border-b pb-2">
-                                        <div class="flex items-center">
-                                            <span class="material-icons text-primary-500 text-sm mr-1">medication</span>
-                                            <span class="text-gray-900">${obat.nama}</span>
-                                        </div>
-                                        <span class="text-gray-600">${obat.dosis}</span>
+                            let obats = (Array.isArray(resep.obats) && resep.obats.length > 0) ?
+                                resep.obats.map(obat => `
+                                    <div class="flex justify-between bg-gray-100 p-2 rounded-lg">
+                                        <p class="text-gray-700">${obat.nama}</p>
+                                        <p class="text-gray-500">${obat.dosis}</p>
                                     </div>
-                                `).join("") : `
-                                    <div class="text-center py-4">
-                                        <span class="material-icons text-gray-400">inventory_2</span>
-                                        <p class='text-gray-500'>Tidak ada obat.</p>
-                                    </div>`;
+                                `).join("") :
+                                `<div class="text-center py-4">
+                                    <span class="material-icons text-gray-400">inventory_2</span>
+                                    <p class='text-gray-500'>There isn't obat.</p>
+                                </div>`;
+
 
                             let statusInfo = {
                                 "pending": {
@@ -230,18 +242,23 @@
                                 "Menunggu Verifikasi": {
                                     color: "blue",
                                     icon: "pending_actions",
-                                    text: "Menunggu Verifikasi"
+                                    text: "Wait for Verification"
                                 },
                                 "Terverifikasi": {
                                     color: "green",
                                     icon: "check_circle",
-                                    text: "Terverifikasi"
+                                    text: "Verified"
                                 },
                                 "Ditolak": {
                                     color: "red",
                                     icon: "cancel",
-                                    text: "Ditolak"
-                                }
+                                    text: "Rejected"
+                                },
+                                "Ditebus": {
+                                    color: "green",
+                                    icon: "assignment_turned_in",
+                                    text: "Redeemed"
+                                },
                             } [resep.status] || {
                                 color: "gray",
                                 icon: "help",
@@ -253,7 +270,7 @@
                                     <div class="flex justify-between items-center">
                                         <div class="flex items-center">
                                             <span class="material-icons text-gray-400 mr-1">person</span>
-                                            <p class="text-gray-500 text-sm">Pasien</p>
+                                            <p class="text-gray-500 text-sm">Patient</p>
                                         </div>
                                         <div class="flex items-center text-${statusInfo.color}-600 bg-${statusInfo.color}-50 px-2 py-1 rounded-full">
                                             <span class="material-icons text-${statusInfo.color}-600 text-xs mr-1">${statusInfo.icon}</span>
@@ -264,37 +281,37 @@
                                     
                                     <div class="flex items-center">
                                         <span class="material-icons text-gray-400 mr-1">medical_services</span>
-                                        <p class="text-gray-500 text-sm">Dokter</p>
+                                        <p class="text-gray-500 text-sm">Doctor</p>
                                     </div>
-                                    <p class="text-lg font-medium text-gray-900">${resep.dokter || 'Resep Upload'}</p>
+                                    <p class="text-lg font-medium text-gray-900">${resep.dokter || 'Recipe Upload'}</p>
                                     
                                     <div class="flex items-center">
                                         <span class="material-icons text-gray-400 mr-1">photo_library</span>
-                                        <p class="text-gray-500 text-sm">Foto Resep</p>
+                                        <p class="text-gray-500 text-sm">Recipe Photos</p>
                                     </div>
                                     <div class="flex space-x-2 overflow-x-auto py-1 scrollbar-thin scrollbar-thumb-gray-300">${fotoResepHtml}</div>
                                     
                                     <div class="flex items-center">
                                         <span class="material-icons text-gray-400 mr-1">medication</span>
-                                        <p class="text-gray-500 text-sm">Obat yang Diresepkan</p>
+                                        <p class="text-gray-500 text-sm">Prescribed medication</p>
                                     </div>
                                     <div class="space-y-2">${obats}</div>
                                     
                                     ${resep.status === 'pending' && resep.sumber.toLowerCase() === 'dokter' ? `
-                                            <button onclick="ajukanVerifikasi(${resep.id})" 
-                                                class="w-full mt-2 flex items-center justify-center bg-amber-500 text-white px-4 py-2 rounded-lg shadow hover:bg-amber-600 transition">
-                                                <span class="material-icons mr-1">send</span>
-                                                Ajukan Verifikasi
-                                            </button>
-                                        ` : ''}
+                                                                        <button onclick="ajukanVerifikasi(${resep.id})" 
+                                                                            class="w-full mt-2 flex items-center justify-center bg-amber-500 text-white px-4 py-2 rounded-lg shadow hover:bg-amber-600 transition">
+                                                                            <span class="material-icons mr-1">send</span>
+                                                                            Apply for Verification
+                                                                        </button>
+                                                                    ` : ''}
                                     
                                     ${resep.status === 'Terverifikasi' ? `
-                                            <a href="{{ url('/checkout/resep') }}/${resep.id}" 
-                                                class="w-full mt-2 flex items-center justify-center bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 transition">
-                                                <span class="material-icons mr-1">shopping_cart</span>
-                                                Tebus Obat
-                                            </a>
-                                        ` : ''}
+                                                                        <a href="{{ url('/checkout/resep') }}/${resep.id}" 
+                                                                            class="w-full mt-2 flex items-center justify-center bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 transition">
+                                                                            <span class="material-icons mr-1">shopping_cart</span>
+                                                                            Redeem Medication
+                                                                        </a>
+                                                                    ` : ''}
                                 </div>`;
 
                             container.innerHTML += resepHtml;
@@ -305,7 +322,7 @@
                     container.innerHTML = `
                         <div class="col-span-full text-center py-8">
                             <span class="material-icons text-4xl text-red-500">error</span>
-                            <p class='text-red-500 mt-2'>Gagal mengambil data. Coba lagi.</p>
+                            <p class='text-red-500 mt-2'>Failed to fetch data. Try again later.</p>
                         </div>`;
                 });
         }
@@ -338,13 +355,12 @@
                 .then(response => response.json())
                 .then(data => {
                     // Show Material Design Snackbar instead of alert
-                    showSnackbar(data.success ? 'Resep berhasil diajukan untuk verifikasi!' :
-                        'Terjadi kesalahan saat mengajukan verifikasi!');
+                    showSnackbar(data.success ? 'Successfull to send verification request!' : 'Failed to send verification request. Try again later.');
                     fetchResep('dokter');
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showSnackbar('Terjadi kesalahan pada sistem.');
+                    showSnackbar('Something went wrong. Try again later.');
                 })
                 .finally(() => {
                     btn.disabled = false;

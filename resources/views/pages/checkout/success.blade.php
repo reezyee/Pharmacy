@@ -64,24 +64,45 @@
                     <p class="font-medium">Subtotal</p>
                     <p>Rp{{ number_format($order->total_amount) }}</p>
                 </div>
+                
+                @php
+                    $freeShipping = $order->total_amount >= 100000;
+                    $shippingCost = ($order->payment_method !== 'cop') ? ($freeShipping ? 0 : 10000) : 0;
+                    $handlingFee = ($order->payment_method === 'cod') ? 1000 : 0;
+                    $grandTotal = $order->total_amount + $shippingCost + $handlingFee;
+                @endphp
+                
                 @if ($order->payment_method !== 'cop')
                     <div class="flex justify-between">
                         <p class="font-medium">Shipping Cost</p>
-                        <p>Rp 10,000</p>
+                        @if ($freeShipping)
+                            <p><span class="line-through text-gray-500">Rp10.000</span> <span class="text-green-500">Free</span></p>
+                        @else
+                            <p>Rp10.000</p>
+                        @endif
                     </div>
                 @endif
+                
+                @if ($freeShipping)
+                    <p class="text-green-500">🎉 Congrats! You get free shipping.</p>
+                @else
+                    <p class="text-red-500">
+                        Shop Rp{{ number_format(100000 - $order->total_amount, 0, ',', '.') }} more to get free shipping.
+                    </p>
+                @endif
+                
                 @if ($order->payment_method === 'cod')
                     <div class="flex justify-between">
                         <p class="font-medium">Handling Fee</p>
-                        <p>Rp 1,000</p>
+                        <p>Rp1.000</p>
                     </div>
                 @endif
 
                 <div class="flex justify-between text-lg font-bold border-t pt-3">
                     <p>Total Bayar</p>
-                    <p>
-                        Rp{{ number_format($order->total_amount + ($order->payment_method !== 'cop' ? 10000 : 0) + ($order->payment_method === 'cod' ? 1000 : 0)) }}
-                    </p>
+                    <span id="grandTotal">
+                        Rp{{ number_format($grandTotal) }}
+                    </span>
                 </div>
             </div>
 
@@ -94,7 +115,7 @@
                         <p class="font-mono">Bank: BCA</p>
                         <p class="font-mono">Account: 1234567890</p>
                         <p class="font-mono">Name: PT. Apotek Amanah</p>
-                        <p class="font-mono">Amount: Rp{{ number_format($order->total_amount + 10000) }}</p>
+                        <p class="font-mono">Amount: Rp{{ number_format($grandTotal) }}</p>
                     </div>
                     <p class="text-sm text-blue-600 mt-2 font-semibold">
                         * Please include your order number ({{ $order->order_number }}) in the transfer description.
@@ -128,6 +149,37 @@
                 </div>
             @endif
 
+            @if ($order->payment_method === 'transfer')
+                @if (!$order->payment_proof)
+                    {{-- Jika belum ada bukti pembayaran, tampilkan form unggah --}}
+                    <div class="flex justify-center">
+                        <form action="{{ route('user.orders.uploadProof', $order->id) }}" method="POST"
+                            enctype="multipart/form-data" class="mt-3">
+                            @csrf
+                            <label for="payment_proof" class="block text-sm font-medium text-gray-700">Unggah Bukti
+                                Pembayaran</label>
+                            <input type="file" name="payment_proof" id="payment_proof"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+
+                            <button type="submit"
+                                class="mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 10h11M9 21V3">
+                                    </path>
+                                </svg>
+                                <span>Kirim Bukti Pembayaran</span>
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    {{-- Jika bukti pembayaran sudah ada, tampilkan pesan konfirmasi --}}
+                    <div class="mt-3 text-green-600 font-semibold text-center">
+                        ✅ Successfull to proof payment, Please wait to processing.
+                    </div>
+                @endif
+            @endif
+
             <div class="mt-8 flex justify-center space-x-4">
                 <a href="{{ route('home') }}"
                     class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center space-x-2">
@@ -135,13 +187,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                     <span>Back to Home</span>
-                </a>
-                <a href=""
-                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11M9 21V3"></path>
-                    </svg>
-                    <span>View Order Details</span>
                 </a>
                 <a href="{{ route('order.pdf', $order) }}"
                     class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">

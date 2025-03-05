@@ -9,7 +9,7 @@
         <div class="mb-6 space-y-4">
             <!-- Search Bar - iOS Style -->
             <div class="relative">
-                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <div class="absolute inset-y-0 start-0 mt-14 lg:mt-0 flex items-center ps-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 20 20">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,7 +115,7 @@
                             <form action="{{ route('obat.destroy', $obat) }}" method="POST" class="inline delete-form">
                                 @csrf @method('DELETE')
                                 <button type="submit"
-                                    class="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 focus:ring-4 focus:ring-red-300"
+                                    class="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 focus:ring-4 focus:ring-red-300"
                                     onclick="return confirm('Are you sure you want to delete this medicine?')">
                                     Delete
                                 </button>

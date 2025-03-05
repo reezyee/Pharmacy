@@ -41,7 +41,7 @@ class ResepController extends Controller
         });
 
         return view('pages.admin.resep', compact('reseps', 'dokters', 'pasiens', 'obats'))
-            ->with(['title' => 'Resep Obat']);
+            ->with(['title' => 'Recipes']);
     }
 
 
@@ -138,13 +138,19 @@ class ResepController extends Controller
         return back()->with('success', 'Resep berhasil dihapus!');
     }
 
+    public function showUploadForm()
+    {
+        // Return the view that contains your form
+        return view('pages.upload-resep')->with(['title' => 'Upload Recipe']);
+    }
+
+    // Modify your existing upload method to properly redirect
     public function upload(Request $request)
     {
         $request->validate([
             'foto_resep.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'final_photos' => 'nullable|string',
         ]);
-
 
         $pasienNama = $request->has('pasien_nama') && !empty($request->pasien_nama)
             ? $request->pasien_nama
@@ -175,11 +181,10 @@ class ResepController extends Controller
                 if (!$isDuplicate) {
                     $fileName = time() . '_' . $originalName;
                     $file->move($path, $fileName);
-                    $uploadedFiles[] = $fileName;
+                    $filePaths[] = 'resep/' . $fileName;
                 }
             }
         }
-
 
         // Proses foto dari kamera
         if ($request->filled('final_photos')) {
@@ -207,7 +212,7 @@ class ResepController extends Controller
                 }
             } catch (\Exception $e) {
                 Log::error('Error processing photos:', ['error' => $e->getMessage()]);
-                return back()->with('error', 'Gagal memproses foto: ' . $e->getMessage());
+                return redirect()->route('resep.form')->with('error', 'Gagal memproses foto: ' . $e->getMessage());
             }
         }
 
@@ -215,11 +220,11 @@ class ResepController extends Controller
         if (!empty($filePaths)) {
             try {
                 $resep = Resep::create([
-                    'pasien_id' => $pasienId, // Akan null jika pasien input manual
-                    'pasien_nama' => $pasienNama, // Nama pasien sesuai input manual
+                    'pasien_id' => $pasienId,
+                    'pasien_nama' => $pasienNama,
                     'tipe' => 'pasien',
                     'dokter_id' => null,
-                    'foto_resep' => $filePaths, // Tidak perlu json_encode karena sudah ada cast array
+                    'foto_resep' => $filePaths,
                     'status' => 'Menunggu Verifikasi',
                     'catatan' => $request->catatan ?? null
                 ]);
@@ -229,13 +234,14 @@ class ResepController extends Controller
                     'file_paths' => $filePaths
                 ]);
 
-                return back()->with('success', 'Resep berhasil diunggah! Menunggu verifikasi apoteker.');
+                // Redirect to the form page with success message
+                return redirect()->route('resep.form')->with('success', 'Resep berhasil diunggah! Menunggu verifikasi apoteker.');
             } catch (\Exception $e) {
                 Log::error('Database error:', ['error' => $e->getMessage()]);
-                return back()->with('error', 'Gagal menyimpan ke database: ' . $e->getMessage());
+                return redirect()->route('resep.form')->with('error', 'Gagal menyimpan ke database: ' . $e->getMessage());
             }
         }
 
-        return back()->with('error', 'Tidak ada file yang berhasil diunggah. Pastikan file atau foto dari kamera sudah valid.');
+        return redirect()->route('resep.form')->with('error', 'Tidak ada file yang berhasil diunggah. Pastikan file atau foto dari kamera sudah valid.');
     }
 }

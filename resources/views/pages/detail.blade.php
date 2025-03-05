@@ -105,31 +105,31 @@
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Type</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->jenisObat->nama_jenis_obat }}</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->jenisObat->nama_jenis_obat }}</p>
                         </div>
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Form</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->bentukObat->nama_bentuk_obat }}</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->bentukObat->nama_bentuk_obat }}</p>
                         </div>
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Stock</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->banyak }} units</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->banyak }} units</p>
                         </div>
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Nomer Izin Edar</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->nie }}</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->nie }}</p>
                         </div>
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Composition</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->komposisi_obat }}</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->komposisi_obat }}</p>
                         </div>
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Mass</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->kekuatan_obat }}</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->kekuatan_obat }}</p>
                         </div>
                         <div class="bg-slate-200/70 p-3 rounded-lg border border-slate-700/50">
                             <span class="text-sm text-slate-400">Dosage</span>
-                            <p class="text-cyan-400 font-medium">{{ $obat->dosis_obat }}</p>
+                            <p class="text-slate-800 font-medium">{{ $obat->dosis_obat }}</p>
                         </div>
                     </div>
                     
@@ -156,7 +156,7 @@
                             <!-- Quantity controls (hidden by default) -->
                             <div 
                                 id="quantity-controls-{{ $obat->id }}" 
-                                class="hidden w-full bg-slate-800 rounded-xl border border-slate-700 overflow-hidden"
+                                class="hidden w-full bg-slate-100 rounded-xl border border-slate-700 overflow-hidden"
                             >
                                 <div class="flex items-center justify-between">
                                     <button 
@@ -278,14 +278,6 @@
                     </ul>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Related Products Section -->
-    <div class="mt-12">
-        <h2 class="text-xl font-bold  mb-4">Related Products</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
-            <!-- Related products will be loaded here -->
         </div>
     </div>
 </div>

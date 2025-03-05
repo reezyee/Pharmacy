@@ -2,8 +2,6 @@
 
 @section('content')
     <div class="container mx-auto px-6 py-8">
-        <h1 class="text-3xl font-semibold text-gray-900 mb-6">📝 Verifikasi Resep</h1>
-
         @if (session('success'))
             <div class="flex items-center p-4 mb-4 text-sm text-green-800 bg-green-100 rounded-xl shadow-sm">
                 ✅ {{ session('success') }}
@@ -17,42 +15,42 @@
         @endif
 
         <!-- Statistik Resep -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6 w-full">
             <div class="bg-white shadow-xl rounded-2xl p-6 text-center">
-                <p class="text-gray-500 text-sm">Total Resep</p>
+                <p class="text-gray-500 text-sm">Total Recipe</p>
                 <p class="text-2xl font-bold text-gray-900">{{ $totalResep }}</p>
             </div>
             <div class="bg-yellow-100 shadow-xl rounded-2xl p-6 text-center">
-                <p class="text-gray-500 text-sm">Menunggu Diverifikasi</p>
+                <p class="text-gray-500 text-sm">Wait Verification</p>
                 <p class="text-2xl font-bold text-yellow-600">{{ $menunggu }}</p>
             </div>
             <div class="bg-green-100 shadow-xl rounded-2xl p-6 text-center">
-                <p class="text-gray-500 text-sm">Terverifikasi</p>
+                <p class="text-gray-500 text-sm">Verified</p>
                 <p class="text-2xl font-bold text-green-600">{{ $terverifikasi }}</p>
             </div>
             <div class="bg-red-100 shadow-xl rounded-2xl p-6 text-center">
-                <p class="text-gray-500 text-sm">Ditolak</p>
+                <p class="text-gray-500 text-sm">Denied</p>
                 <p class="text-2xl font-bold text-red-600">{{ $ditolak }}</p>
             </div>
         </div>
 
         <!-- Search dan Filter -->
         <div class="mb-6">
-            <input type="text" id="search" placeholder="Cari resep..."
+            <input type="text" id="search" placeholder="Search Recipe..."
                 class="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
         <div class="flex space-x-4 mb-6">
             <button type="button" onclick="loadResep('Menunggu Verifikasi')"
                 class="tab-btn bg-blue-500 text-white px-4 py-2 rounded-xl shadow-md hover:bg-blue-600 transition">
-                Menunggu Verifikasi
+                Wait Verification
             </button>
             <button type="button" onclick="loadResep('Terverifikasi')"
                 class="tab-btn bg-green-500 text-white px-4 py-2 rounded-xl shadow-md hover:bg-green-600 transition">
-                Terverifikasi
+                Verified
             </button>
             <button type="button" onclick="loadResep('Ditolak')"
                 class="tab-btn bg-red-500 text-white px-4 py-2 rounded-xl shadow-md hover:bg-red-600 transition">
-                Ditolak
+                Denied
             </button>
         </div>
 
@@ -68,7 +66,7 @@
         <div class="fixed inset-0 flex items-center justify-center">
             <div class="bg-white rounded-2xl p-6 w-full max-w-4xl mx-4">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold">Verifikasi Resep</h3>
+                    <h3 class="text-xl font-semibold"></h3>
                     <button type="button" onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -82,32 +80,32 @@
                     <input type="hidden" id="resepId" name="resep_id">
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Pasien</label>
+                        <label class="block text-sm font-medium text-gray-700">Patient</label>
                         <p id="modalPasienNama" class="mt-1 text-lg font-semibold"></p>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Daftar Obat</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Medicine List</label>
                         <div id="obatListContainer" class="space-y-4"></div>
                         <button type="button" onclick="addObatField()"
                             class="mt-4 w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-xl hover:bg-blue-50">
-                            + Tambah Obat
+                            + Add Medicine
                         </button>
                     </div>
 
                     <div class="mb-4">
-                        <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
+                        <label for="catatan" class="block text-sm font-medium text-gray-700">Note</label>
                         <textarea id="catatan" name="catatan" rows="3" class="mt-1 w-full rounded-xl border-gray-300 shadow-sm"></textarea>
                     </div>
 
                     <div class="flex space-x-3">
                         <button type="submit"
                             class="flex-1 bg-green-500 text-white py-2 px-4 rounded-xl hover:bg-green-600">
-                            Verifikasi
+                            Verify
                         </button>
                         <button type="button" onclick="closeModal()"
                             class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-xl hover:bg-gray-400">
-                            Batal
+                            Cancel
                         </button>
                     </div>
                 </form>
@@ -149,7 +147,7 @@
 
                 if (!data.data || data.data.length === 0) {
                     container.innerHTML =
-                        '<p class="col-span-full text-center text-gray-500">Tidak ada resep yang ditemukan.</p>';
+                        `<p class="col-span-full text-center text-gray-500">There isn't recipe.</p>`;
                     return;
                 }
 
@@ -163,7 +161,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 container.innerHTML =
-                    '<p class="col-span-full text-center text-red-500">Terjadi kesalahan saat memuat data.</p>';
+                    '<p class="col-span-full text-center text-red-500">Something went wrong when fetching recipes.</p>';
             }
         }
 
@@ -174,26 +172,26 @@
 
             const content = `
         <div>
-            <p class="text-gray-500 text-sm">Pasien</p>
+            <p class="text-gray-500 text-sm">Patient</p>
             <p class="text-lg font-semibold">${resep.pasien?.name || resep.pasien_nama || '-'}</p>
         </div>
         <div>
-            <p class="text-gray-500 text-sm">Dokter</p>
-            <p class="text-lg font-semibold">${resep.dokter?.name || 'Resep Upload'}</p>
+            <p class="text-gray-500 text-sm">Doctor</p>
+            <p class="text-lg font-semibold">${resep.dokter?.name || 'Recipe Uploaded'}</p>
         </div>
         <div>
-            <p class="text-gray-500 text-sm">Resep</p>
+            <p class="text-gray-500 text-sm">Recipe</p>
             ${renderResepContent(resep)}
         </div>
         ${currentStatus === 'Menunggu Verifikasi' ? `
                                             <div class="flex space-x-2">
                                                 <button onclick="openVerifikasiModal('${resep.id}', ${JSON.stringify(resep).replace(/"/g, '&quot;')})" 
                                                     class="flex-1 bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition">
-                                                    ✅ Verifikasi
+                                                    ✅ Verify
                                                 </button>
                                                 <button onclick="rejectResep('${resep.id}')" 
                                                     class="flex-1 bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition">
-                                                    ❌ Tolak
+                                                    ❌ Reject
                                                 </button>
                                             </div>
                                         ` : ''}
@@ -209,7 +207,7 @@
             <ul class="space-y-2">
                 ${resep.obats.map(obat => `
                                                     <li>
-                                                        <strong>R/ ${obat.nama || 'Nama tidak tersedia'}</strong>
+                                                        <strong>R/ ${obat.nama || 'Name not found'}</strong>
                                                         ${obat.dosis ? `, ${obat.dosis}` : ''}
                                                     </li>
                                                 `).join('')}
@@ -228,7 +226,7 @@
             </div>
         `;
             }
-            return '<p class="text-gray-500 text-center">Tidak ada data obat atau foto resep.</p>';
+            return '<p class="text-gray-500 text-center">Nothing Medicine or Recipe Photos.</p>';
         }
 
         function updatePagination(data) {
@@ -285,7 +283,7 @@
 
             div.innerHTML = `
         <select name="obat[]" class="flex-1 rounded-xl border-gray-300" required>
-            <option value="">Pilih Obat</option>
+            <option value="">Select Medicine</option>
             ${obatData.map(obat => `
                                                 <option value="${obat.id}" ${existingObat && existingObat.id == obat.id ? 'selected' : ''}>
                                                     ${obat.nama} - ${obat.kekuatan_obat}
@@ -342,25 +340,25 @@
                 console.log("Response dari server:", result);
 
                 if (result.success) {
-                    showAlert('success', 'Resep berhasil diverifikasi');
+                    showAlert('success', 'Success to Verify');
                     closeModal();
                     loadResep(currentStatus);
                 } else {
-                    throw new Error(result.message || 'Gagal memverifikasi resep');
+                    throw new Error(result.message || 'Failed to Verify');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('error', error.message || 'Terjadi kesalahan saat memverifikasi resep');
+                showAlert('error', error.message || 'Something went wrong when verifying the resep.');
             }
         }
 
         async function rejectResep(resepId) {
             if (!resepId) {
-                showAlert('error', 'ID resep tidak ditemukan');
+                showAlert('error', 'ID Recipe is not found');
                 return;
             }
 
-            if (!confirm('Apakah Anda yakin ingin menolak resep ini?')) {
+            if (!confirm('Are you sure to reject this resep?')) {
                 return;
             }
 
@@ -382,14 +380,14 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert('success', 'Resep berhasil ditolak');
+                    showAlert('success', 'Success to Reject');
                     loadResep(currentStatus);
                 } else {
-                    throw new Error(result.message || 'Gagal menolak resep');
+                    throw new Error(result.message || 'Failed to Reject');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('error', error.message || 'Terjadi kesalahan saat menolak resep');
+                showAlert('error', error.message || 'Something went wrong when rejecting the resep.');
             }
         }
 
